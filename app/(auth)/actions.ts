@@ -56,24 +56,25 @@ export const register = async (
   formData: FormData,
 ): Promise<RegisterActionState> => {
   try {
-    const validatedData = authFormSchema.parse({
-      email: formData.get('email'),
-      password: formData.get('password'),
-    });
+    throw new Error('Not implemented');
+    // const validatedData = authFormSchema.parse({
+    //   email: formData.get('email'),
+    //   password: formData.get('password'),
+    // });
 
-    const [user] = await getUser(validatedData.email);
+    // const [user] = await getUser(validatedData.email);
 
-    if (user) {
-      return { status: 'user_exists' } as RegisterActionState;
-    }
-    await createUser(validatedData.email, validatedData.password);
-    await signIn('credentials', {
-      email: validatedData.email,
-      password: validatedData.password,
-      redirect: false,
-    });
+    // if (user) {
+    //   return { status: 'user_exists' } as RegisterActionState;
+    // }
+    // await createUser(validatedData.email, validatedData.password);
+    // await signIn('credentials', {
+    //   email: validatedData.email,
+    //   password: validatedData.password,
+    //   redirect: false,
+    // });
 
-    return { status: 'success' };
+    // return { status: 'success' };
   } catch (error) {
     if (error instanceof z.ZodError) {
       return { status: 'invalid_data' };
