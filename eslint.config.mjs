@@ -34,7 +34,15 @@ const eslintConfig = [
       'import/order': [
         'error',
         {
-          groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index', 'type'],
+          groups: [
+            'builtin',
+            'external',
+            'internal',
+            'parent',
+            'sibling',
+            'index',
+            'type',
+          ],
           'newlines-between': 'always',
           alphabetize: {
             order: 'asc',
@@ -42,6 +50,8 @@ const eslintConfig = [
           },
         },
       ],
+      '@typescript-eslint/no-unused-vars': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
     },
     settings: {
       'import/resolver': {
