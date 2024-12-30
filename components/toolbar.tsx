@@ -1,13 +1,8 @@
 'use client';
 
-import type { ChatRequestOptions, CreateMessage, Message } from 'ai';
 import cx from 'classnames';
-import {
-  AnimatePresence,
-  motion,
-  useMotionValue,
-  useTransform,
-} from 'framer-motion';
+import { AnimatePresence, motion, useMotionValue, useTransform } from 'framer-motion';
+import { nanoid } from 'nanoid';
 import {
   type Dispatch,
   memo,
@@ -17,7 +12,7 @@ import {
   useState,
 } from 'react';
 import { useOnClickOutside } from 'usehooks-ts';
-import { nanoid } from 'nanoid';
+
 import {
   Tooltip,
   TooltipContent,
@@ -26,6 +21,7 @@ import {
 } from '@/components/ui/tooltip';
 import { sanitizeUIMessages } from '@/lib/utils';
 
+import { BlockKind } from './block';
 import {
   ArrowUpIcon,
   CodeIcon,
@@ -37,7 +33,8 @@ import {
   SummarizeIcon,
   TerminalIcon,
 } from './icons';
-import { BlockKind } from './block';
+
+import type { ChatRequestOptions, CreateMessage, Message } from 'ai';
 
 type ToolProps = {
   type:
@@ -105,8 +102,7 @@ const Tool = ({
       } else if (type === 'request-suggestions') {
         append({
           role: 'user',
-          content:
-            'Please add suggestions you have that could improve the writing.',
+          content: 'Please add suggestions you have that could improve the writing.',
         });
 
         setSelectedTool(null);
@@ -132,7 +128,7 @@ const Tool = ({
     <Tooltip open={isHovered && !isAnimating}>
       <TooltipTrigger asChild>
         <motion.div
-          className={cx('p-3 rounded-full', {
+          className={cx('rounded-full p-3', {
             'bg-primary !text-primary-foreground': selectedTool === type,
           })}
           onHoverStart={() => {
@@ -165,7 +161,7 @@ const Tool = ({
       <TooltipContent
         side="left"
         sideOffset={16}
-        className="bg-foreground text-background rounded-2xl p-3 px-4"
+        className="rounded-2xl bg-foreground p-3 px-4 text-background"
       >
         {description}
       </TooltipContent>
@@ -201,8 +197,7 @@ const ReadingLevelSelector = ({
   const yToLevel = useTransform(y, [0, -dragConstraints], [0, 5]);
 
   const [currentLevel, setCurrentLevel] = useState(2);
-  const [hasUserSelectedLevel, setHasUserSelectedLevel] =
-    useState<boolean>(false);
+  const [hasUserSelectedLevel, setHasUserSelectedLevel] = useState<boolean>(false);
 
   useEffect(() => {
     const unsubscribe = yToLevel.on('change', (latest) => {
@@ -214,11 +209,11 @@ const ReadingLevelSelector = ({
   }, [yToLevel]);
 
   return (
-    <div className="relative flex flex-col justify-end items-center">
+    <div className="relative flex flex-col items-center justify-end">
       {randomArr.map((id) => (
         <motion.div
           key={id}
-          className="size-[40px] flex flex-row items-center justify-center"
+          className="flex size-[40px] flex-row items-center justify-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -233,7 +228,7 @@ const ReadingLevelSelector = ({
           <TooltipTrigger asChild>
             <motion.div
               className={cx(
-                'absolute bg-background p-3 border rounded-full flex flex-row items-center',
+                'absolute flex flex-row items-center rounded-full border bg-background p-3',
                 {
                   'bg-primary text-primary-foreground': currentLevel !== 2,
                   'bg-background text-foreground': currentLevel === 2,
@@ -274,7 +269,7 @@ const ReadingLevelSelector = ({
           <TooltipContent
             side="left"
             sideOffset={16}
-            className="bg-foreground text-background text-sm rounded-2xl p-3 px-4"
+            className="rounded-2xl bg-foreground p-3 px-4 text-sm text-background"
           >
             {LEVELS[currentLevel]}
           </TooltipContent>
@@ -454,7 +449,7 @@ const PureToolbar = ({
   return (
     <TooltipProvider delayDuration={0}>
       <motion.div
-        className="cursor-pointer absolute right-6 bottom-6 p-1.5 border rounded-full shadow-lg bg-background flex flex-col justify-end"
+        className="absolute bottom-6 right-6 flex cursor-pointer flex-col justify-end rounded-full border bg-background p-1.5 shadow-lg"
         initial={{ opacity: 0, y: -20, scale: 1 }}
         animate={
           isToolbarVisible

@@ -1,3 +1,7 @@
+import { type ClassValue, clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+import type { Message as DBMessage, Document } from '@/lib/db/schema';
 import type {
   CoreAssistantMessage,
   CoreMessage,
@@ -5,10 +9,6 @@ import type {
   Message,
   ToolInvocation,
 } from 'ai';
-import { type ClassValue, clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-
-import type { Message as DBMessage, Document } from '@/lib/db/schema';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -84,9 +84,7 @@ function addToolMessageToChat({
   });
 }
 
-export function convertToUIMessages(
-  messages: Array<DBMessage>,
-): Array<Message> {
+export function convertToUIMessages(messages: Array<DBMessage>): Array<Message> {
   return messages.reduce((chatMessages: Array<Message>, message) => {
     if (message.role === 'tool') {
       return addToolMessageToChat({
@@ -160,9 +158,7 @@ export function sanitizeResponseMessages(
     };
   });
 
-  return messagesBySanitizedContent.filter(
-    (message) => message.content.length > 0,
-  );
+  return messagesBySanitizedContent.filter((message) => message.content.length > 0);
 }
 
 export function sanitizeUIMessages(messages: Array<Message>): Array<Message> {

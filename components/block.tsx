@@ -1,10 +1,5 @@
-import type {
-  Attachment,
-  ChatRequestOptions,
-  CreateMessage,
-  Message,
-} from 'ai';
 import { formatDistance } from 'date-fns';
+import equal from 'fast-deep-equal';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   type Dispatch,
@@ -17,23 +12,24 @@ import {
 import useSWR, { useSWRConfig } from 'swr';
 import { useDebounceCallback, useWindowSize } from 'usehooks-ts';
 
-import type { Document, Suggestion, Vote } from '@/lib/db/schema';
+import { useBlock } from '@/hooks/use-block';
 import { cn, fetcher } from '@/lib/utils';
 
-import { DiffView } from './diffview';
-import { DocumentSkeleton } from './document-skeleton';
-import { Editor } from './editor';
-import { MultimodalInput } from './multimodal-input';
-import { Toolbar } from './toolbar';
-import { VersionFooter } from './version-footer';
 import { BlockActions } from './block-actions';
 import { BlockCloseButton } from './block-close-button';
 import { BlockMessages } from './block-messages';
 import { CodeEditor } from './code-editor';
 import { Console } from './console';
+import { DiffView } from './diffview';
+import { DocumentSkeleton } from './document-skeleton';
+import { Editor } from './editor';
+import { MultimodalInput } from './multimodal-input';
+import { Toolbar } from './toolbar';
 import { useSidebar } from './ui/sidebar';
-import { useBlock } from '@/hooks/use-block';
-import equal from 'fast-deep-equal';
+import { VersionFooter } from './version-footer';
+
+import type { Document, Suggestion, Vote } from '@/lib/db/schema';
+import type { Attachment, ChatRequestOptions, CreateMessage, Message } from 'ai';
 
 export type BlockKind = 'text' | 'code';
 
@@ -125,9 +121,7 @@ function PureBlock({
   const [mode, setMode] = useState<'edit' | 'diff'>('edit');
   const [document, setDocument] = useState<Document | null>(null);
   const [currentVersionIndex, setCurrentVersionIndex] = useState(-1);
-  const [consoleOutputs, setConsoleOutputs] = useState<Array<ConsoleOutput>>(
-    [],
-  );
+  const [consoleOutputs, setConsoleOutputs] = useState<Array<ConsoleOutput>>([]);
 
   const { open: isSidebarOpen } = useSidebar();
 
@@ -197,10 +191,7 @@ function PureBlock({
     [block, mutate],
   );
 
-  const debouncedHandleContentChange = useDebounceCallback(
-    handleContentChange,
-    2000,
-  );
+  const debouncedHandleContentChange = useDebounceCallback(handleContentChange, 2000);
 
   const saveContent = useCallback(
     (updatedContent: string, debounce: boolean) => {
@@ -266,14 +257,14 @@ function PureBlock({
     <AnimatePresence>
       {block.isVisible && (
         <motion.div
-          className="flex flex-row h-dvh w-dvw fixed top-0 left-0 z-50 bg-transparent"
+          className="fixed left-0 top-0 z-50 flex h-dvh w-dvw flex-row bg-transparent"
           initial={{ opacity: 1 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0, transition: { delay: 0.4 } }}
         >
           {!isMobile && (
             <motion.div
-              className="fixed bg-background h-dvh"
+              className="fixed h-dvh bg-background"
               initial={{
                 width: isSidebarOpen ? windowWidth - 256 : windowWidth,
                 right: 0,
@@ -288,7 +279,7 @@ function PureBlock({
 
           {!isMobile && (
             <motion.div
-              className="relative w-[400px] bg-muted dark:bg-background h-dvh shrink-0"
+              className="relative h-dvh w-[400px] shrink-0 bg-muted dark:bg-background"
               initial={{ opacity: 0, x: 10, scale: 1 }}
               animate={{
                 opacity: 1,
@@ -311,7 +302,7 @@ function PureBlock({
               <AnimatePresence>
                 {!isCurrentVersion && (
                   <motion.div
-                    className="left-0 absolute h-dvh w-[400px] top-0 bg-zinc-900/50 z-50"
+                    className="absolute left-0 top-0 z-50 h-dvh w-[400px] bg-zinc-900/50"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
@@ -319,7 +310,7 @@ function PureBlock({
                 )}
               </AnimatePresence>
 
-              <div className="flex flex-col h-full justify-between items-center gap-4">
+              <div className="flex h-full flex-col items-center justify-between gap-4">
                 <BlockMessages
                   chatId={chatId}
                   isLoading={isLoading}
@@ -331,7 +322,7 @@ function PureBlock({
                   blockStatus={block.status}
                 />
 
-                <form className="flex flex-row gap-2 relative items-end w-full px-4 pb-4">
+                <form className="relative flex w-full flex-row items-end gap-2 px-4 pb-4">
                   <MultimodalInput
                     chatId={chatId}
                     input={input}
@@ -352,7 +343,7 @@ function PureBlock({
           )}
 
           <motion.div
-            className="fixed dark:bg-muted bg-background h-dvh flex flex-col overflow-y-scroll border-l dark:border-zinc-700 border-zinc-200"
+            className="fixed flex h-dvh flex-col overflow-y-scroll border-l border-zinc-200 bg-background dark:border-zinc-700 dark:bg-muted"
             initial={
               isMobile
                 ? {
@@ -394,9 +385,7 @@ function PureBlock({
                     x: 400,
                     y: 0,
                     height: windowHeight,
-                    width: windowWidth
-                      ? windowWidth - 400
-                      : 'calc(100dvw-400px)',
+                    width: windowWidth ? windowWidth - 400 : 'calc(100dvw-400px)',
                     borderRadius: 0,
                     transition: {
                       delay: 0,
@@ -418,14 +407,12 @@ function PureBlock({
               },
             }}
           >
-            <div className="p-2 flex flex-row justify-between items-start">
-              <div className="flex flex-row gap-4 items-start">
+            <div className="flex flex-row items-start justify-between p-2">
+              <div className="flex flex-row items-start gap-4">
                 <BlockCloseButton />
 
                 <div className="flex flex-col">
-                  <div className="font-medium">
-                    {document?.title ?? block.title}
-                  </div>
+                  <div className="font-medium">{document?.title ?? block.title}</div>
 
                   {isContentDirty ? (
                     <div className="text-sm text-muted-foreground">
@@ -442,7 +429,7 @@ function PureBlock({
                       )}`}
                     </div>
                   ) : (
-                    <div className="w-32 h-3 mt-2 bg-muted-foreground/20 rounded-md animate-pulse" />
+                    <div className="mt-2 h-3 w-32 animate-pulse rounded-md bg-muted-foreground/20" />
                   )}
                 </div>
               </div>
@@ -459,10 +446,10 @@ function PureBlock({
 
             <div
               className={cn(
-                'dark:bg-muted bg-background h-full overflow-y-scroll !max-w-full pb-40 items-center',
+                'h-full !max-w-full items-center overflow-y-scroll bg-background pb-40 dark:bg-muted',
                 {
-                  'py-2 px-2': block.kind === 'code',
-                  'py-8 md:p-20 px-4': block.kind === 'text',
+                  'px-2 py-2': block.kind === 'code',
+                  'px-4 py-8 md:p-20': block.kind === 'text',
                 },
               )}
             >
@@ -503,16 +490,14 @@ function PureBlock({
                     />
                   ) : (
                     <DiffView
-                      oldContent={getDocumentContentById(
-                        currentVersionIndex - 1,
-                      )}
+                      oldContent={getDocumentContentById(currentVersionIndex - 1)}
                       newContent={getDocumentContentById(currentVersionIndex)}
                     />
                   )
                 ) : null}
 
                 {suggestions ? (
-                  <div className="md:hidden h-dvh w-12 shrink-0" />
+                  <div className="h-dvh w-12 shrink-0 md:hidden" />
                 ) : null}
 
                 <AnimatePresence>

@@ -1,10 +1,3 @@
-import { cn, generateUUID } from '@/lib/utils';
-import { ClockRewind, CopyIcon, PlayIcon, RedoIcon, UndoIcon } from './icons';
-import { Button } from './ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
-import { useCopyToClipboard } from 'usehooks-ts';
-import { toast } from 'sonner';
-import { ConsoleOutput, UIBlock } from './block';
 import {
   Dispatch,
   memo,
@@ -13,6 +6,15 @@ import {
   useCallback,
   useState,
 } from 'react';
+import { toast } from 'sonner';
+import { useCopyToClipboard } from 'usehooks-ts';
+
+import { cn, generateUUID } from '@/lib/utils';
+
+import { ConsoleOutput, UIBlock } from './block';
+import { ClockRewind, CopyIcon, PlayIcon, RedoIcon, UndoIcon } from './icons';
+import { Button } from './ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 
 interface BlockActionsProps {
   block: UIBlock;
@@ -88,9 +90,8 @@ export function RunCodeButton({
 
         await currentPyodideInstance.runPythonAsync(codeContent);
 
-        const output: string = await currentPyodideInstance.runPythonAsync(
-          `sys.stdout.getvalue()`,
-        );
+        const output: string =
+          await currentPyodideInstance.runPythonAsync(`sys.stdout.getvalue()`);
 
         updateConsoleOutput(runId, output, 'completed');
       } catch (error: any) {
@@ -102,7 +103,7 @@ export function RunCodeButton({
   return (
     <Button
       variant="outline"
-      className="py-1.5 px-2 h-fit dark:hover:bg-zinc-700"
+      className="h-fit px-2 py-1.5 dark:hover:bg-zinc-700"
       onClick={() => {
         startTransition(() => {
           loadAndRunPython();
@@ -136,18 +137,13 @@ function PureBlockActions({
           <TooltipTrigger asChild>
             <Button
               variant="outline"
-              className={cn(
-                'p-2 h-fit !pointer-events-auto dark:hover:bg-zinc-700',
-                {
-                  'bg-muted': mode === 'diff',
-                },
-              )}
+              className={cn('!pointer-events-auto h-fit p-2 dark:hover:bg-zinc-700', {
+                'bg-muted': mode === 'diff',
+              })}
               onClick={() => {
                 handleVersionChange('toggle');
               }}
-              disabled={
-                block.status === 'streaming' || currentVersionIndex === 0
-              }
+              disabled={block.status === 'streaming' || currentVersionIndex === 0}
             >
               <ClockRewind size={18} />
             </Button>
@@ -160,7 +156,7 @@ function PureBlockActions({
         <TooltipTrigger asChild>
           <Button
             variant="outline"
-            className="p-2 h-fit dark:hover:bg-zinc-700 !pointer-events-auto"
+            className="!pointer-events-auto h-fit p-2 dark:hover:bg-zinc-700"
             onClick={() => {
               handleVersionChange('prev');
             }}
@@ -176,7 +172,7 @@ function PureBlockActions({
         <TooltipTrigger asChild>
           <Button
             variant="outline"
-            className="p-2 h-fit dark:hover:bg-zinc-700 !pointer-events-auto"
+            className="!pointer-events-auto h-fit p-2 dark:hover:bg-zinc-700"
             onClick={() => {
               handleVersionChange('next');
             }}
@@ -192,7 +188,7 @@ function PureBlockActions({
         <TooltipTrigger asChild>
           <Button
             variant="outline"
-            className="p-2 h-fit dark:hover:bg-zinc-700"
+            className="h-fit p-2 dark:hover:bg-zinc-700"
             onClick={() => {
               copyToClipboard(block.content);
               toast.success('Copied to clipboard!');
@@ -210,8 +206,7 @@ function PureBlockActions({
 
 export const BlockActions = memo(PureBlockActions, (prevProps, nextProps) => {
   if (prevProps.block.status !== nextProps.block.status) return false;
-  if (prevProps.currentVersionIndex !== nextProps.currentVersionIndex)
-    return false;
+  if (prevProps.currentVersionIndex !== nextProps.currentVersionIndex) return false;
   if (prevProps.isCurrentVersion !== nextProps.isCurrentVersion) return false;
 
   return true;

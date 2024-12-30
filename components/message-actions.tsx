@@ -1,9 +1,9 @@
-import type { Message } from 'ai';
+import equal from 'fast-deep-equal';
+import { memo } from 'react';
 import { toast } from 'sonner';
 import { useSWRConfig } from 'swr';
 import { useCopyToClipboard } from 'usehooks-ts';
 
-import type { Vote } from '@/lib/db/schema';
 import { getMessageIdFromAnnotations } from '@/lib/utils';
 
 import { CopyIcon, ThumbDownIcon, ThumbUpIcon } from './icons';
@@ -14,8 +14,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from './ui/tooltip';
-import { memo } from 'react';
-import equal from 'fast-deep-equal';
+
+import type { Vote } from '@/lib/db/schema';
+import type { Message } from 'ai';
 
 export function PureMessageActions({
   chatId,
@@ -33,8 +34,7 @@ export function PureMessageActions({
 
   if (isLoading) return null;
   if (message.role === 'user') return null;
-  if (message.toolInvocations && message.toolInvocations.length > 0)
-    return null;
+  if (message.toolInvocations && message.toolInvocations.length > 0) return null;
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -42,7 +42,7 @@ export function PureMessageActions({
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
-              className="py-1 px-2 h-fit text-muted-foreground"
+              className="h-fit px-2 py-1 text-muted-foreground"
               variant="outline"
               onClick={async () => {
                 await copyToClipboard(message.content as string);
@@ -58,7 +58,7 @@ export function PureMessageActions({
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
-              className="py-1 px-2 h-fit text-muted-foreground !pointer-events-auto"
+              className="!pointer-events-auto h-fit px-2 py-1 text-muted-foreground"
               disabled={vote?.isUpvoted}
               variant="outline"
               onClick={async () => {
@@ -112,7 +112,7 @@ export function PureMessageActions({
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
-              className="py-1 px-2 h-fit text-muted-foreground !pointer-events-auto"
+              className="!pointer-events-auto h-fit px-2 py-1 text-muted-foreground"
               variant="outline"
               disabled={vote && !vote.isUpvoted}
               onClick={async () => {
@@ -167,12 +167,9 @@ export function PureMessageActions({
   );
 }
 
-export const MessageActions = memo(
-  PureMessageActions,
-  (prevProps, nextProps) => {
-    if (!equal(prevProps.vote, nextProps.vote)) return false;
-    if (prevProps.isLoading !== nextProps.isLoading) return false;
+export const MessageActions = memo(PureMessageActions, (prevProps, nextProps) => {
+  if (!equal(prevProps.vote, nextProps.vote)) return false;
+  if (prevProps.isLoading !== nextProps.isLoading) return false;
 
-    return true;
-  },
-);
+  return true;
+});

@@ -38,13 +38,7 @@ export const {
 
       return token;
     },
-    async session({
-      session,
-      token,
-    }: {
-      session: ExtendedSession;
-      token: any;
-    }) {
+    async session({ session, token }: { session: ExtendedSession; token: any }) {
       if (session.user) {
         session.user.id = token.id as string;
       }

@@ -3,13 +3,13 @@
 import { type CoreUserMessage, generateText } from 'ai';
 import { cookies } from 'next/headers';
 
+import { VisibilityType } from '@/components/visibility-selector';
 import { customModel } from '@/lib/ai';
 import {
   deleteMessagesByChatIdAfterTimestamp,
   getMessageById,
   updateChatVisiblityById,
 } from '@/lib/db/queries';
-import { VisibilityType } from '@/components/visibility-selector';
 
 export async function saveModelId(model: string) {
   const cookieStore = await cookies();

@@ -6,13 +6,14 @@ import { useState } from 'react';
 import { useSWRConfig } from 'swr';
 import { useWindowSize } from 'usehooks-ts';
 
-import type { Document } from '@/lib/db/schema';
+import { useBlock } from '@/hooks/use-block';
 import { getDocumentTimestampByIndex } from '@/lib/utils';
 
-import type { UIBlock } from './block';
 import { LoaderIcon } from './icons';
 import { Button } from './ui/button';
-import { useBlock } from '@/hooks/use-block';
+
+import type { UIBlock } from './block';
+import type { Document } from '@/lib/db/schema';
 
 interface VersionFooterProps {
   handleVersionChange: (type: 'next' | 'prev' | 'toggle' | 'latest') => void;
@@ -37,7 +38,7 @@ export const VersionFooter = ({
 
   return (
     <motion.div
-      className="absolute flex flex-col gap-4 lg:flex-row bottom-0 bg-background p-4 w-full border-t z-50 justify-between"
+      className="absolute bottom-0 z-50 flex w-full flex-col justify-between gap-4 border-t bg-background p-4 lg:flex-row"
       initial={{ y: isMobile ? 200 : 77 }}
       animate={{ y: 0 }}
       exit={{ y: isMobile ? 200 : 77 }}
@@ -45,7 +46,7 @@ export const VersionFooter = ({
     >
       <div>
         <div>You are viewing a previous version</div>
-        <div className="text-muted-foreground text-sm">
+        <div className="text-sm text-muted-foreground">
           Restore this version to make edits
         </div>
       </div>

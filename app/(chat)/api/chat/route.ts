@@ -10,11 +10,7 @@ import { z } from 'zod';
 import { auth } from '@/app/(auth)/auth';
 import { customModel } from '@/lib/ai';
 import { models } from '@/lib/ai/models';
-import {
-  codePrompt,
-  systemPrompt,
-  updateDocumentPrompt,
-} from '@/lib/ai/prompts';
+import { codePrompt, systemPrompt, updateDocumentPrompt } from '@/lib/ai/prompts';
 import {
   deleteChatById,
   getChatById,
@@ -24,7 +20,6 @@ import {
   saveMessages,
   saveSuggestions,
 } from '@/lib/db/queries';
-import type { Suggestion } from '@/lib/db/schema';
 import {
   generateUUID,
   getMostRecentUserMessage,
@@ -32,6 +27,8 @@ import {
 } from '@/lib/utils';
 
 import { generateTitleFromUserMessage } from '../../actions';
+
+import type { Suggestion } from '@/lib/db/schema';
 
 export const maxDuration = 60;
 
@@ -56,8 +53,7 @@ export async function POST(request: Request) {
     id,
     messages,
     modelId,
-  }: { id: string; messages: Array<Message>; modelId: string } =
-    await request.json();
+  }: { id: string; messages: Array<Message>; modelId: string } = await request.json();
 
   const session = await auth();
 
@@ -221,8 +217,7 @@ export async function POST(request: Request) {
                 id,
                 title,
                 kind,
-                content:
-                  'A document was created and is now visible to the user.',
+                content: 'A document was created and is now visible to the user.',
               };
             },
           },
@@ -357,12 +352,8 @@ export async function POST(request: Request) {
                 prompt: document.content,
                 output: 'array',
                 schema: z.object({
-                  originalSentence: z
-                    .string()
-                    .describe('The original sentence'),
-                  suggestedSentence: z
-                    .string()
-                    .describe('The suggested sentence'),
+                  originalSentence: z.string().describe('The original sentence'),
+                  suggestedSentence: z.string().describe('The suggested sentence'),
                   description: z
                     .string()
                     .describe('The description of the suggestion'),

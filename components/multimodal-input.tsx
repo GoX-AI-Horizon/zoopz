@@ -1,13 +1,7 @@
 'use client';
 
-import type {
-  Attachment,
-  ChatRequestOptions,
-  CreateMessage,
-  Message,
-} from 'ai';
 import cx from 'classnames';
-import type React from 'react';
+import equal from 'fast-deep-equal';
 import {
   useRef,
   useEffect,
@@ -25,10 +19,12 @@ import { sanitizeUIMessages } from '@/lib/utils';
 
 import { ArrowUpIcon, PaperclipIcon, StopIcon } from './icons';
 import { PreviewAttachment } from './preview-attachment';
+import { SuggestedActions } from './suggested-actions';
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
-import { SuggestedActions } from './suggested-actions';
-import equal from 'fast-deep-equal';
+
+import type { Attachment, ChatRequestOptions, CreateMessage, Message } from 'ai';
+import type React from 'react';
 
 function PureMultimodalInput({
   chatId,
@@ -81,10 +77,7 @@ function PureMultimodalInput({
     }
   };
 
-  const [localStorageInput, setLocalStorageInput] = useLocalStorage(
-    'input',
-    '',
-  );
+  const [localStorageInput, setLocalStorageInput] = useLocalStorage('input', '');
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -186,7 +179,7 @@ function PureMultimodalInput({
   );
 
   return (
-    <div className="relative w-full flex flex-col gap-4">
+    <div className="relative flex w-full flex-col gap-4">
       {messages.length === 0 &&
         attachments.length === 0 &&
         uploadQueue.length === 0 && (
@@ -195,7 +188,7 @@ function PureMultimodalInput({
 
       <input
         type="file"
-        className="fixed -top-4 -left-4 size-0.5 opacity-0 pointer-events-none"
+        className="pointer-events-none fixed -left-4 -top-4 size-0.5 opacity-0"
         ref={fileInputRef}
         multiple
         onChange={handleFileChange}
@@ -203,7 +196,7 @@ function PureMultimodalInput({
       />
 
       {(attachments.length > 0 || uploadQueue.length > 0) && (
-        <div className="flex flex-row gap-2 overflow-x-scroll items-end">
+        <div className="flex flex-row items-end gap-2 overflow-x-scroll">
           {attachments.map((attachment) => (
             <PreviewAttachment key={attachment.url} attachment={attachment} />
           ))}
@@ -228,7 +221,7 @@ function PureMultimodalInput({
         value={input}
         onChange={handleInput}
         className={cx(
-          'min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-2xl !text-base bg-muted pb-10 dark:border-zinc-700',
+          'max-h-[calc(75dvh)] min-h-[24px] resize-none overflow-hidden rounded-2xl bg-muted pb-10 !text-base dark:border-zinc-700',
           className,
         )}
         rows={2}
@@ -246,11 +239,11 @@ function PureMultimodalInput({
         }}
       />
 
-      <div className="absolute bottom-0 p-2 w-fit flex flex-row justify-start">
+      <div className="absolute bottom-0 flex w-fit flex-row justify-start p-2">
         <AttachmentsButton fileInputRef={fileInputRef} isLoading={isLoading} />
       </div>
 
-      <div className="absolute bottom-0 right-0 p-2 w-fit flex flex-row justify-end">
+      <div className="absolute bottom-0 right-0 flex w-fit flex-row justify-end p-2">
         {isLoading ? (
           <StopButton stop={stop} setMessages={setMessages} />
         ) : (
@@ -265,16 +258,13 @@ function PureMultimodalInput({
   );
 }
 
-export const MultimodalInput = memo(
-  PureMultimodalInput,
-  (prevProps, nextProps) => {
-    if (prevProps.input !== nextProps.input) return false;
-    if (prevProps.isLoading !== nextProps.isLoading) return false;
-    if (!equal(prevProps.attachments, nextProps.attachments)) return false;
+export const MultimodalInput = memo(PureMultimodalInput, (prevProps, nextProps) => {
+  if (prevProps.input !== nextProps.input) return false;
+  if (prevProps.isLoading !== nextProps.isLoading) return false;
+  if (!equal(prevProps.attachments, nextProps.attachments)) return false;
 
-    return true;
-  },
-);
+  return true;
+});
 
 function PureAttachmentsButton({
   fileInputRef,
@@ -285,7 +275,7 @@ function PureAttachmentsButton({
 }) {
   return (
     <Button
-      className="rounded-md rounded-bl-lg p-[7px] h-fit dark:border-zinc-700 hover:dark:bg-zinc-900 hover:bg-zinc-200"
+      className="h-fit rounded-md rounded-bl-lg p-[7px] hover:bg-zinc-200 dark:border-zinc-700 hover:dark:bg-zinc-900"
       onClick={(event) => {
         event.preventDefault();
         fileInputRef.current?.click();
@@ -309,7 +299,7 @@ function PureStopButton({
 }) {
   return (
     <Button
-      className="rounded-full p-1.5 h-fit border dark:border-zinc-600"
+      className="h-fit rounded-full border p-1.5 dark:border-zinc-600"
       onClick={(event) => {
         event.preventDefault();
         stop();
@@ -334,7 +324,7 @@ function PureSendButton({
 }) {
   return (
     <Button
-      className="rounded-full p-1.5 h-fit border dark:border-zinc-600"
+      className="h-fit rounded-full border p-1.5 dark:border-zinc-600"
       onClick={(event) => {
         event.preventDefault();
         submitForm();
@@ -347,8 +337,7 @@ function PureSendButton({
 }
 
 const SendButton = memo(PureSendButton, (prevProps, nextProps) => {
-  if (prevProps.uploadQueue.length !== nextProps.uploadQueue.length)
-    return false;
+  if (prevProps.uploadQueue.length !== nextProps.uploadQueue.length) return false;
   if (prevProps.input !== nextProps.input) return false;
   return true;
 });

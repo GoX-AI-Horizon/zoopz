@@ -1,15 +1,12 @@
-import type { Node } from 'prosemirror-model';
 import { Plugin, PluginKey } from 'prosemirror-state';
-import {
-  type Decoration,
-  DecorationSet,
-  type EditorView,
-} from 'prosemirror-view';
+import { type Decoration, DecorationSet, type EditorView } from 'prosemirror-view';
 import { createRoot } from 'react-dom/client';
 
-import { Suggestion as PreviewSuggestion } from '@/components/suggestion';
-import type { Suggestion } from '@/lib/db/schema';
 import { BlockKind } from '@/components/block';
+import { Suggestion as PreviewSuggestion } from '@/components/suggestion';
+
+import type { Suggestion } from '@/lib/db/schema';
+import type { Node } from 'prosemirror-model';
 
 export interface UISuggestion extends Suggestion {
   selectionStart: number;

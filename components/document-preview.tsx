@@ -1,24 +1,19 @@
 'use client';
 
-import {
-  memo,
-  MouseEvent,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-} from 'react';
-import { UIBlock } from './block';
-import { FileIcon, FullscreenIcon, LoaderIcon } from './icons';
-import { cn, fetcher } from '@/lib/utils';
-import { Document } from '@/lib/db/schema';
-import { InlineDocumentSkeleton } from './document-skeleton';
-import useSWR from 'swr';
-import { Editor } from './editor';
-import { DocumentToolCall, DocumentToolResult } from './document';
-import { CodeEditor } from './code-editor';
-import { useBlock } from '@/hooks/use-block';
 import equal from 'fast-deep-equal';
+import { memo, MouseEvent, useCallback, useEffect, useMemo, useRef } from 'react';
+import useSWR from 'swr';
+
+import { useBlock } from '@/hooks/use-block';
+import { Document } from '@/lib/db/schema';
+import { cn, fetcher } from '@/lib/utils';
+
+import { UIBlock } from './block';
+import { CodeEditor } from './code-editor';
+import { DocumentToolCall, DocumentToolResult } from './document';
+import { InlineDocumentSkeleton } from './document-skeleton';
+import { Editor } from './editor';
+import { FileIcon, FullscreenIcon, LoaderIcon } from './icons';
 
 interface DocumentPreviewProps {
   isReadonly: boolean;
@@ -26,16 +21,13 @@ interface DocumentPreviewProps {
   args?: any;
 }
 
-export function DocumentPreview({
-  isReadonly,
-  result,
-  args,
-}: DocumentPreviewProps) {
+export function DocumentPreview({ isReadonly, result, args }: DocumentPreviewProps) {
   const { block, setBlock } = useBlock();
 
-  const { data: documents, isLoading: isDocumentsFetching } = useSWR<
-    Array<Document>
-  >(result ? `/api/document?id=${result.id}` : null, fetcher);
+  const { data: documents, isLoading: isDocumentsFetching } = useSWR<Array<Document>>(
+    result ? `/api/document?id=${result.id}` : null,
+    fetcher,
+  );
 
   const previewDocument = useMemo(() => documents?.[0], [documents]);
   const hitboxRef = useRef<HTMLDivElement>(null);
@@ -110,18 +102,18 @@ export function DocumentPreview({
 
 const LoadingSkeleton = () => (
   <div className="w-full">
-    <div className="p-4 border rounded-t-2xl flex flex-row gap-2 items-center justify-between dark:bg-muted h-[57px] dark:border-zinc-700 border-b-0">
+    <div className="flex h-[57px] flex-row items-center justify-between gap-2 rounded-t-2xl border border-b-0 p-4 dark:border-zinc-700 dark:bg-muted">
       <div className="flex flex-row items-center gap-3">
         <div className="text-muted-foreground">
-          <div className="animate-pulse rounded-md size-4 bg-muted-foreground/20" />
+          <div className="size-4 animate-pulse rounded-md bg-muted-foreground/20" />
         </div>
-        <div className="animate-pulse rounded-lg h-4 bg-muted-foreground/20 w-24" />
+        <div className="h-4 w-24 animate-pulse rounded-lg bg-muted-foreground/20" />
       </div>
       <div>
         <FullscreenIcon />
       </div>
     </div>
-    <div className="overflow-y-scroll border rounded-b-2xl p-8 pt-4 bg-muted border-t-0 dark:border-zinc-700">
+    <div className="overflow-y-scroll rounded-b-2xl border border-t-0 bg-muted p-8 pt-4 dark:border-zinc-700">
       <InlineDocumentSkeleton />
     </div>
   </div>
@@ -162,14 +154,14 @@ const PureHitboxLayer = ({
 
   return (
     <div
-      className="size-full absolute top-0 left-0 rounded-xl z-10"
+      className="absolute left-0 top-0 z-10 size-full rounded-xl"
       ref={hitboxRef}
       onClick={handleClick}
       role="presentation"
       aria-hidden="true"
     >
-      <div className="w-full p-4 flex justify-end items-center">
-        <div className="absolute right-[9px] top-[13px] p-2 hover:dark:bg-zinc-700 rounded-md hover:bg-zinc-100">
+      <div className="flex w-full items-center justify-end p-4">
+        <div className="absolute right-[9px] top-[13px] rounded-md p-2 hover:bg-zinc-100 hover:dark:bg-zinc-700">
           <FullscreenIcon />
         </div>
       </div>
@@ -189,8 +181,8 @@ const PureDocumentHeader = ({
   title: string;
   isStreaming: boolean;
 }) => (
-  <div className="p-4 border rounded-t-2xl flex flex-row gap-2 items-start sm:items-center justify-between dark:bg-muted border-b-0 dark:border-zinc-700">
-    <div className="flex flex-row items-start sm:items-center gap-3">
+  <div className="flex flex-row items-start justify-between gap-2 rounded-t-2xl border border-b-0 p-4 dark:border-zinc-700 dark:bg-muted sm:items-center">
+    <div className="flex flex-row items-start gap-3 sm:items-center">
       <div className="text-muted-foreground">
         {isStreaming ? (
           <div className="animate-spin">
@@ -200,7 +192,7 @@ const PureDocumentHeader = ({
           <FileIcon />
         )}
       </div>
-      <div className="-translate-y-1 sm:translate-y-0 font-medium">{title}</div>
+      <div className="-translate-y-1 font-medium sm:translate-y-0">{title}</div>
     </div>
     <div className="w-8" />
   </div>
@@ -238,7 +230,7 @@ const DocumentContent = ({ document }: { document: Document }) => {
       {document.kind === 'text' ? (
         <Editor {...commonProps} />
       ) : document.kind === 'code' ? (
-        <div className="flex flex-1 relative w-full">
+        <div className="relative flex w-full flex-1">
           <div className="absolute inset-0">
             <CodeEditor {...commonProps} />
           </div>

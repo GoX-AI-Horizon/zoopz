@@ -1,19 +1,20 @@
 'use client';
 
-import type { Attachment, Message } from 'ai';
 import { useChat } from 'ai/react';
 import { useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 
 import { ChatHeader } from '@/components/chat-header';
-import type { Vote } from '@/lib/db/schema';
+import { useBlockSelector } from '@/hooks/use-block';
 import { fetcher } from '@/lib/utils';
 
 import { Block } from './block';
-import { MultimodalInput } from './multimodal-input';
 import { Messages } from './messages';
+import { MultimodalInput } from './multimodal-input';
 import { VisibilityType } from './visibility-selector';
-import { useBlockSelector } from '@/hooks/use-block';
+
+import type { Vote } from '@/lib/db/schema';
+import type { Attachment, Message } from 'ai';
 
 export function Chat({
   id,
@@ -50,17 +51,14 @@ export function Chat({
     },
   });
 
-  const { data: votes } = useSWR<Array<Vote>>(
-    `/api/vote?chatId=${id}`,
-    fetcher,
-  );
+  const { data: votes } = useSWR<Array<Vote>>(`/api/vote?chatId=${id}`, fetcher);
 
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
   const isBlockVisible = useBlockSelector((state) => state.isVisible);
 
   return (
     <>
-      <div className="flex flex-col min-w-0 h-dvh bg-background">
+      <div className="flex h-dvh min-w-0 flex-col bg-background">
         <ChatHeader
           chatId={id}
           selectedModelId={selectedModelId}
@@ -79,7 +77,7 @@ export function Chat({
           isBlockVisible={isBlockVisible}
         />
 
-        <form className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">
+        <form className="mx-auto flex w-full gap-2 bg-background px-4 pb-4 md:max-w-3xl md:pb-6">
           {!isReadonly && (
             <MultimodalInput
               chatId={id}

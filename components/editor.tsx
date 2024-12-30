@@ -6,12 +6,7 @@ import { EditorState } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
 import React, { memo, useEffect, useRef } from 'react';
 
-import type { Suggestion } from '@/lib/db/schema';
-import {
-  documentSchema,
-  handleTransaction,
-  headingRule,
-} from '@/lib/editor/config';
+import { documentSchema, handleTransaction, headingRule } from '@/lib/editor/config';
 import {
   buildContentFromDocument,
   buildDocumentFromContent,
@@ -23,6 +18,8 @@ import {
   suggestionsPluginKey,
 } from '@/lib/editor/suggestions';
 
+import type { Suggestion } from '@/lib/db/schema';
+
 type EditorProps = {
   content: string;
   saveContent: (updatedContent: string, debounce: boolean) => void;
@@ -32,12 +29,7 @@ type EditorProps = {
   suggestions: Array<Suggestion>;
 };
 
-function PureEditor({
-  content,
-  saveContent,
-  suggestions,
-  status,
-}: EditorProps) {
+function PureEditor({ content, saveContent, suggestions, status }: EditorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<EditorView | null>(null);
 
@@ -88,9 +80,7 @@ function PureEditor({
 
   useEffect(() => {
     if (editorRef.current && content) {
-      const currentContent = buildContentFromDocument(
-        editorRef.current.state.doc,
-      );
+      const currentContent = buildContentFromDocument(editorRef.current.state.doc);
 
       if (status === 'streaming') {
         const newDocument = buildDocumentFromContent(content);
@@ -126,14 +116,9 @@ function PureEditor({
       const projectedSuggestions = projectWithPositions(
         editorRef.current.state.doc,
         suggestions,
-      ).filter(
-        (suggestion) => suggestion.selectionStart && suggestion.selectionEnd,
-      );
+      ).filter((suggestion) => suggestion.selectionStart && suggestion.selectionEnd);
 
-      const decorations = createDecorations(
-        projectedSuggestions,
-        editorRef.current,
-      );
+      const decorations = createDecorations(projectedSuggestions, editorRef.current);
 
       const transaction = editorRef.current.state.tr;
       transaction.setMeta(suggestionsPluginKey, { decorations });
@@ -141,9 +126,7 @@ function PureEditor({
     }
   }, [suggestions, content]);
 
-  return (
-    <div className="relative prose dark:prose-invert" ref={containerRef} />
-  );
+  return <div className="prose relative dark:prose-invert" ref={containerRef} />;
 }
 
 function areEqual(prevProps: EditorProps, nextProps: EditorProps) {

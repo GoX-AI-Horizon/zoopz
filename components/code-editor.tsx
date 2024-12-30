@@ -1,11 +1,12 @@
 'use client';
 
-import { EditorView } from '@codemirror/view';
-import { EditorState, Transaction } from '@codemirror/state';
 import { python } from '@codemirror/lang-python';
+import { EditorState, Transaction } from '@codemirror/state';
 import { oneDark } from '@codemirror/theme-one-dark';
+import { EditorView } from '@codemirror/view';
 import { basicSetup } from 'codemirror';
 import React, { memo, useEffect, useRef } from 'react';
+
 import { Suggestion } from '@/lib/db/schema';
 
 type EditorProps = {
@@ -89,7 +90,7 @@ function PureCodeEditor({ content, saveContent, status }: EditorProps) {
 
   return (
     <div
-      className="relative not-prose w-full pb-[calc(80dvh)] text-sm"
+      className="not-prose relative w-full pb-[calc(80dvh)] text-sm"
       ref={containerRef}
     />
   );
@@ -97,8 +98,7 @@ function PureCodeEditor({ content, saveContent, status }: EditorProps) {
 
 function areEqual(prevProps: EditorProps, nextProps: EditorProps) {
   if (prevProps.suggestions !== nextProps.suggestions) return false;
-  if (prevProps.currentVersionIndex !== nextProps.currentVersionIndex)
-    return false;
+  if (prevProps.currentVersionIndex !== nextProps.currentVersionIndex) return false;
   if (prevProps.isCurrentVersion !== nextProps.isCurrentVersion) return false;
   if (prevProps.status === 'streaming' && nextProps.status === 'streaming')
     return false;

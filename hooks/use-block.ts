@@ -36,13 +36,9 @@ export function useBlockSelector<Selected>(selector: Selector<Selected>) {
 }
 
 export function useBlock() {
-  const { data: localBlock, mutate: setLocalBlock } = useSWR<UIBlock>(
-    'block',
-    null,
-    {
-      fallbackData: initialBlockData,
-    },
-  );
+  const { data: localBlock, mutate: setLocalBlock } = useSWR<UIBlock>('block', null, {
+    fallbackData: initialBlockData,
+  });
 
   const block = useMemo(() => {
     if (!localBlock) return initialBlockData;

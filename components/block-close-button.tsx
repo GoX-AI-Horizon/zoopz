@@ -1,7 +1,9 @@
 import { memo } from 'react';
+
+import { initialBlockData, useBlock } from '@/hooks/use-block';
+
 import { CrossIcon } from './icons';
 import { Button } from './ui/button';
-import { initialBlockData, useBlock } from '@/hooks/use-block';
 
 function PureBlockCloseButton() {
   const { setBlock } = useBlock();

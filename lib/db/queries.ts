@@ -5,6 +5,8 @@ import { and, asc, desc, eq, gt, gte } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 
+import { BlockKind } from '@/components/block';
+
 import {
   user,
   chat,
@@ -16,7 +18,6 @@ import {
   message,
   vote,
 } from './schema';
-import { BlockKind } from '@/components/block';
 
 // Optionally, if not using email/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth
@@ -246,9 +247,7 @@ export async function deleteDocumentsByIdAfterTimestamp({
       .delete(document)
       .where(and(eq(document.id, id), gt(document.createdAt, timestamp)));
   } catch (error) {
-    console.error(
-      'Failed to delete documents by id after timestamp from database',
-    );
+    console.error('Failed to delete documents by id after timestamp from database');
     throw error;
   }
 }
@@ -277,9 +276,7 @@ export async function getSuggestionsByDocumentId({
       .from(suggestion)
       .where(and(eq(suggestion.documentId, documentId)));
   } catch (error) {
-    console.error(
-      'Failed to get suggestions by document version from database',
-    );
+    console.error('Failed to get suggestions by document version from database');
     throw error;
   }
 }
@@ -303,13 +300,9 @@ export async function deleteMessagesByChatIdAfterTimestamp({
   try {
     return await db
       .delete(message)
-      .where(
-        and(eq(message.chatId, chatId), gte(message.createdAt, timestamp)),
-      );
+      .where(and(eq(message.chatId, chatId), gte(message.createdAt, timestamp)));
   } catch (error) {
-    console.error(
-      'Failed to delete messages by id after timestamp from database',
-    );
+    console.error('Failed to delete messages by id after timestamp from database');
     throw error;
   }
 }

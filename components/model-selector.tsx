@@ -22,8 +22,7 @@ export function ModelSelector({
   selectedModelId: string;
 } & React.ComponentProps<typeof Button>) {
   const [open, setOpen] = useState(false);
-  const [optimisticModelId, setOptimisticModelId] =
-    useOptimistic(selectedModelId);
+  const [optimisticModelId, setOptimisticModelId] = useOptimistic(selectedModelId);
 
   const selectedModel = useMemo(
     () => models.find((model) => model.id === optimisticModelId),
@@ -39,7 +38,7 @@ export function ModelSelector({
           className,
         )}
       >
-        <Button variant="outline" className="md:px-2 md:h-[34px]">
+        <Button variant="outline" className="md:h-[34px] md:px-2">
           {selectedModel?.label}
           <ChevronDownIcon />
         </Button>
@@ -56,10 +55,10 @@ export function ModelSelector({
                 saveModelId(model.id);
               });
             }}
-            className="gap-4 group/item flex flex-row justify-between items-center"
+            className="group/item flex flex-row items-center justify-between gap-4"
             data-active={model.id === optimisticModelId}
           >
-            <div className="flex flex-col gap-1 items-start">
+            <div className="flex flex-col items-start gap-1">
               {model.label}
               {model.description && (
                 <div className="text-xs text-muted-foreground">
@@ -67,7 +66,7 @@ export function ModelSelector({
                 </div>
               )}
             </div>
-            <div className="text-foreground dark:text-foreground opacity-0 group-data-[active=true]/item:opacity-100">
+            <div className="text-foreground opacity-0 group-data-[active=true]/item:opacity-100 dark:text-foreground">
               <CheckCircleFillIcon />
             </div>
           </DropdownMenuItem>
