@@ -10,6 +10,7 @@ import {
   useEffect,
   useRef,
   useState,
+  type JSX,
 } from 'react';
 import { useOnClickOutside } from 'usehooks-ts';
 
@@ -404,8 +405,8 @@ const PureToolbar = ({
   setMessages: Dispatch<SetStateAction<Message[]>>;
   blockKind: 'text' | 'code';
 }) => {
-  const toolbarRef = useRef<HTMLDivElement>(null);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const toolbarRef = useRef<HTMLDivElement>(null!);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null!);
 
   const [selectedTool, setSelectedTool] = useState<string | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
