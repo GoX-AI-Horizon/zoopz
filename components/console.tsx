@@ -8,6 +8,7 @@ import {
 } from 'react';
 
 import { cn } from '@/lib/utils';
+import { useBlockSelector } from '@/hooks/use-block';
 
 import { ConsoleOutput } from './block';
 import { TerminalWindowIcon, LoaderIcon, CrossSmallIcon } from './icons';
@@ -22,6 +23,8 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
   const [height, setHeight] = useState<number>(300);
   const [isResizing, setIsResizing] = useState(false);
   const consoleEndRef = useRef<HTMLDivElement>(null);
+
+  const isBlockVisible = useBlockSelector((state) => state.isVisible);
 
   const minHeight = 100;
   const maxHeight = 800;
@@ -58,6 +61,12 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
   useEffect(() => {
     consoleEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [consoleOutputs]);
+
+  useEffect(() => {
+    if (!isBlockVisible) {
+      setConsoleOutputs([]);
+    }
+  }, [isBlockVisible, setConsoleOutputs]);
 
   return consoleOutputs.length > 0 ? (
     <>
