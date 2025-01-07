@@ -103,20 +103,49 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
             >
               <div
                 className={cn('w-12 shrink-0', {
-                  'text-muted-foreground': consoleOutput.status === 'in_progress',
+                  'text-muted-foreground': [
+                    'in_progress',
+                    'loading_packages',
+                  ].includes(consoleOutput.status),
                   'text-emerald-500': consoleOutput.status === 'completed',
                   'text-red-400': consoleOutput.status === 'failed',
                 })}
               >
                 [{index + 1}]
               </div>
-              {consoleOutput.status === 'in_progress' ? (
-                <div className="size-fit animate-spin self-center">
-                  <LoaderIcon />
+              {['in_progress', 'loading_packages'].includes(consoleOutput.status) ? (
+                <div className="flex flex-row gap-2">
+                  <div className="size-fit animate-spin self-center">
+                    <LoaderIcon />
+                  </div>
+                  <div className="text-muted-foreground">
+                    {consoleOutput.status === 'in_progress'
+                      ? 'Initializing...'
+                      : consoleOutput.status === 'loading_packages'
+                        ? 'Loading Packages...'
+                        : null}
+                  </div>
                 </div>
               ) : (
-                <div className="whitespace-pre-line text-zinc-900 dark:text-zinc-50">
-                  {consoleOutput.content}
+                <div className="flex w-full flex-col gap-2 text-zinc-900 dark:text-zinc-50">
+                  {consoleOutput.contents.map((content, index) =>
+                    content.type === 'image' ? (
+                      <picture key={`${consoleOutput.id}-${index}`}>
+                        <img
+                          src={content.value}
+                          alt="output"
+                          className="w-full max-w-[600px] rounded-md"
+                        />
+                      </picture>
+                    ) : (
+                      <div
+                        key={`${consoleOutput.id}-${index}`}
+                        className="whitespace-pre-line"
+                      >
+                        {content.value}
+                      </div>
+                    ),
+                  )}
                 </div>
               )}
             </div>
