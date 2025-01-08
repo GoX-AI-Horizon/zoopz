@@ -7,8 +7,8 @@ import {
   useState,
 } from 'react';
 
-import { cn } from '@/lib/utils';
 import { useBlockSelector } from '@/hooks/use-block';
+import { cn } from '@/lib/utils';
 
 import { ConsoleOutput } from './block';
 import { TerminalWindowIcon, LoaderIcon, CrossSmallIcon } from './icons';
@@ -124,14 +124,16 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
               </div>
               {['in_progress', 'loading_packages'].includes(consoleOutput.status) ? (
                 <div className="flex flex-row gap-2">
-                  <div className="size-fit animate-spin self-center">
+                  <div className="mb-auto mt-0.5 size-fit animate-spin self-center">
                     <LoaderIcon />
                   </div>
                   <div className="text-muted-foreground">
                     {consoleOutput.status === 'in_progress'
                       ? 'Initializing...'
                       : consoleOutput.status === 'loading_packages'
-                        ? 'Loading Packages...'
+                        ? consoleOutput.contents.map((content) =>
+                            content.type === 'text' ? content.value : null,
+                          )
                         : null}
                   </div>
                 </div>
