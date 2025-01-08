@@ -77,7 +77,17 @@ function PureMultimodalInput({
     }
   };
 
-  const [localStorageInput, setLocalStorageInput] = useLocalStorage('input', '');
+  const resetHeight = () => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = '98px';
+    }
+  };
+
+  const [localStorageInput, setLocalStorageInput] = useLocalStorage(
+    'input',
+    '',
+  );
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -112,6 +122,7 @@ function PureMultimodalInput({
 
     setAttachments([]);
     setLocalStorageInput('');
+    resetHeight();
 
     if (width && width > 768) {
       textareaRef.current?.focus();
