@@ -80,7 +80,7 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
 
       <div
         className={cn(
-          'fixed bottom-0 z-40 flex w-full flex-col overflow-y-scroll border-t border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900',
+          'fixed bottom-0 z-40 flex w-full flex-col overflow-x-hidden overflow-y-scroll border-t border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900',
           {
             'select-none': isResizing,
           },
@@ -138,7 +138,7 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
                   </div>
                 </div>
               ) : (
-                <div className="flex w-full flex-col gap-2 text-zinc-900 dark:text-zinc-50">
+                <div className="flex w-full flex-col gap-2 overflow-x-scroll text-zinc-900 dark:text-zinc-50">
                   {consoleOutput.contents.map((content, index) =>
                     content.type === 'image' ? (
                       <picture key={`${consoleOutput.id}-${index}`}>
@@ -151,7 +151,7 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
                     ) : (
                       <div
                         key={`${consoleOutput.id}-${index}`}
-                        className="whitespace-pre-line"
+                        className="w-full whitespace-pre-line break-words"
                       >
                         {content.value}
                       </div>
