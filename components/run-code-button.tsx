@@ -1,4 +1,3 @@
-import { generateUUID } from '@/lib/utils';
 import {
   type Dispatch,
   type SetStateAction,
@@ -8,10 +7,14 @@ import {
   useEffect,
   memo,
 } from 'react';
-import type { ConsoleOutput, ConsoleOutputContent, UIBlock } from './block';
-import { Button } from './ui/button';
-import { PlayIcon } from './icons';
+
 import { useBlockSelector } from '@/hooks/use-block';
+import { generateUUID } from '@/lib/utils';
+
+import { PlayIcon } from './icons';
+import { Button } from './ui/button';
+
+import type { ConsoleOutput, ConsoleOutputContent, UIBlock } from './block';
 
 const OUTPUT_HANDLERS = {
   matplotlib: `
@@ -69,9 +72,7 @@ export function PureRunCodeButton({
   const [pyodide, setPyodide] = useState<any>(null);
 
   const codeContent = useBlockSelector((state) => state.content);
-  const isBlockStreaming = useBlockSelector(
-    (state) => state.status === 'streaming',
-  );
+  const isBlockStreaming = useBlockSelector((state) => state.status === 'streaming');
 
   const loadAndRunPython = useCallback(async () => {
     const runId = generateUUID();
@@ -104,9 +105,7 @@ export function PureRunCodeButton({
         currentPyodideInstance.setStdout({
           batched: (output: string) => {
             stdOutputs.push({
-              type: output.startsWith('data:image/png;base64')
-                ? 'image'
-                : 'text',
+              type: output.startsWith('data:image/png;base64') ? 'image' : 'text',
               value: output,
             });
           },
@@ -190,7 +189,7 @@ export function PureRunCodeButton({
   return (
     <Button
       variant="outline"
-      className="py-1.5 px-2 h-fit dark:hover:bg-zinc-700"
+      className="h-fit px-2 py-1.5 dark:hover:bg-zinc-700"
       onClick={() => {
         startTransition(() => {
           loadAndRunPython();

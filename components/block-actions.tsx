@@ -1,12 +1,14 @@
+import { Dispatch, memo, SetStateAction } from 'react';
+import { toast } from 'sonner';
+import { useCopyToClipboard } from 'usehooks-ts';
+
 import { cn } from '@/lib/utils';
+
+import { ConsoleOutput, UIBlock } from './block';
 import { ClockRewind, CopyIcon, RedoIcon, UndoIcon } from './icons';
+import { RunCodeButton } from './run-code-button';
 import { Button } from './ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
-import { useCopyToClipboard } from 'usehooks-ts';
-import { toast } from 'sonner';
-import { ConsoleOutput, UIBlock } from './block';
-import { Dispatch, memo, SetStateAction } from 'react';
-import { RunCodeButton } from './run-code-button';
 
 interface BlockActionsProps {
   block: UIBlock;
