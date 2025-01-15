@@ -23,6 +23,7 @@ import { Console } from './console';
 import { DiffView } from './diffview';
 import { DocumentSkeleton } from './document-skeleton';
 import { Editor } from './editor';
+import { ImageEditor } from './image-editor';
 import { MultimodalInput } from './multimodal-input';
 import { Toolbar } from './toolbar';
 import { useSidebar } from './ui/sidebar';
@@ -30,8 +31,7 @@ import { VersionFooter } from './version-footer';
 
 import type { Document, Suggestion, Vote } from '@/lib/db/schema';
 import type { Attachment, ChatRequestOptions, CreateMessage, Message } from 'ai';
-
-export type BlockKind = 'text' | 'code';
+export type BlockKind = 'text' | 'code' | 'image';
 
 export interface UIBlock {
   title: string;
@@ -465,7 +465,7 @@ function PureBlock({
                 })}
               >
                 {isDocumentsFetching && !block.content ? (
-                  <DocumentSkeleton />
+                  <DocumentSkeleton blockKind={block.kind} />
                 ) : block.kind === 'code' ? (
                   <CodeEditor
                     content={
@@ -499,9 +499,22 @@ function PureBlock({
                       newContent={getDocumentContentById(currentVersionIndex)}
                     />
                   )
+                ) : block.kind === 'image' ? (
+                  <ImageEditor
+                    title={block.title}
+                    content={
+                      isCurrentVersion
+                        ? block.content
+                        : getDocumentContentById(currentVersionIndex)
+                    }
+                    isCurrentVersion={isCurrentVersion}
+                    currentVersionIndex={currentVersionIndex}
+                    status={block.status}
+                    isInline={false}
+                  />
                 ) : null}
 
-                {suggestions ? (
+                {suggestions && suggestions.length > 0 ? (
                   <div className="h-dvh w-12 shrink-0 md:hidden" />
                 ) : null}
 

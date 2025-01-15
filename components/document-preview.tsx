@@ -8,12 +8,13 @@ import { useBlock } from '@/hooks/use-block';
 import { Document } from '@/lib/db/schema';
 import { cn, fetcher } from '@/lib/utils';
 
-import { UIBlock } from './block';
+import { BlockKind, UIBlock } from './block';
 import { CodeEditor } from './code-editor';
 import { DocumentToolCall, DocumentToolResult } from './document';
 import { InlineDocumentSkeleton } from './document-skeleton';
 import { Editor } from './editor';
-import { FileIcon, FullscreenIcon, LoaderIcon } from './icons';
+import { FileIcon, FullscreenIcon, ImageIcon, LoaderIcon } from './icons';
+import { ImageEditor } from './image-editor';
 
 interface DocumentPreviewProps {
   isReadonly: boolean;
@@ -70,7 +71,7 @@ export function DocumentPreview({ isReadonly, result, args }: DocumentPreviewPro
   }
 
   if (isDocumentsFetching) {
-    return <LoadingSkeleton />;
+    return <LoadingSkeleton blockKind={result.kind ?? args.kind} />;
   }
 
   const document: Document | null = previewDocument
@@ -86,13 +87,14 @@ export function DocumentPreview({ isReadonly, result, args }: DocumentPreviewPro
         }
       : null;
 
-  if (!document) return <LoadingSkeleton />;
+  if (!document) return <LoadingSkeleton blockKind={block.kind} />;
 
   return (
     <div className="relative w-full cursor-pointer">
       <HitboxLayer hitboxRef={hitboxRef} result={result} setBlock={setBlock} />
       <DocumentHeader
         title={document.title}
+        kind={document.kind}
         isStreaming={block.status === 'streaming'}
       />
       <DocumentContent document={document} />
@@ -100,7 +102,7 @@ export function DocumentPreview({ isReadonly, result, args }: DocumentPreviewPro
   );
 }
 
-const LoadingSkeleton = () => (
+const LoadingSkeleton = ({ blockKind }: { blockKind: BlockKind }) => (
   <div className="w-full">
     <div className="flex h-[57px] flex-row items-center justify-between gap-2 rounded-t-2xl border border-b-0 p-4 dark:border-zinc-700 dark:bg-muted">
       <div className="flex flex-row items-center gap-3">
@@ -113,9 +115,15 @@ const LoadingSkeleton = () => (
         <FullscreenIcon />
       </div>
     </div>
-    <div className="overflow-y-scroll rounded-b-2xl border border-t-0 bg-muted p-8 pt-4 dark:border-zinc-700">
-      <InlineDocumentSkeleton />
-    </div>
+    {blockKind === 'image' ? (
+      <div className="overflow-y-scroll rounded-b-2xl border border-t-0 bg-muted dark:border-zinc-700">
+        <div className="h-[257px] w-full animate-pulse bg-muted-foreground/20" />
+      </div>
+    ) : (
+      <div className="overflow-y-scroll rounded-b-2xl border border-t-0 bg-muted p-8 pt-4 dark:border-zinc-700">
+        <InlineDocumentSkeleton />
+      </div>
+    )}
   </div>
 );
 
@@ -177,9 +185,11 @@ const HitboxLayer = memo(PureHitboxLayer, (prevProps, nextProps) => {
 
 const PureDocumentHeader = ({
   title,
+  kind,
   isStreaming,
 }: {
   title: string;
+  kind: BlockKind;
   isStreaming: boolean;
 }) => (
   <div className="flex flex-row items-start justify-between gap-2 rounded-t-2xl border border-b-0 p-4 dark:border-zinc-700 dark:bg-muted sm:items-center">
@@ -189,6 +199,8 @@ const PureDocumentHeader = ({
           <div className="animate-spin">
             <LoaderIcon />
           </div>
+        ) : kind === 'image' ? (
+          <ImageIcon />
         ) : (
           <FileIcon />
         )}
@@ -236,6 +248,15 @@ const DocumentContent = ({ document }: { document: Document }) => {
             <CodeEditor {...commonProps} />
           </div>
         </div>
+      ) : document.kind === 'image' ? (
+        <ImageEditor
+          title={document.title}
+          content={document.content ?? ''}
+          isCurrentVersion={true}
+          currentVersionIndex={0}
+          status={block.status}
+          isInline={true}
+        />
       ) : null}
     </div>
   );

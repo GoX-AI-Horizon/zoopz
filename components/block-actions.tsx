@@ -2,6 +2,7 @@ import { Dispatch, memo, SetStateAction } from 'react';
 import { toast } from 'sonner';
 import { useCopyToClipboard } from 'usehooks-ts';
 
+import { useMultimodalCopyToClipboard } from '@/hooks/use-multimodal-copy-to-clipboard';
 import { cn } from '@/lib/utils';
 
 import { ConsoleOutput, UIBlock } from './block';
@@ -27,7 +28,8 @@ function PureBlockActions({
   mode,
   setConsoleOutputs,
 }: BlockActionsProps) {
-  const [_, copyToClipboard] = useCopyToClipboard();
+  const { copyTextToClipboard, copyImageToClipboard } =
+    useMultimodalCopyToClipboard();
 
   return (
     <div className="flex flex-row gap-1">
@@ -93,7 +95,12 @@ function PureBlockActions({
             variant="outline"
             className="h-fit p-2 dark:hover:bg-zinc-700"
             onClick={() => {
-              copyToClipboard(block.content);
+              if (block.kind === 'image') {
+                copyImageToClipboard(block.content);
+              } else {
+                copyTextToClipboard(block.content);
+              }
+
               toast.success('Copied to clipboard!');
             }}
             disabled={block.status === 'streaming'}
