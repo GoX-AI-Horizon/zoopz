@@ -31,6 +31,13 @@ const eslintConfig = [
           usePrettierrc: true,
         },
       ],
+      '@typescript-eslint/consistent-type-imports': [
+        'error',
+        {
+          prefer: 'type-imports',
+          fixStyle: 'separate-type-imports',
+        },
+      ],
       'import/order': [
         'error',
         {

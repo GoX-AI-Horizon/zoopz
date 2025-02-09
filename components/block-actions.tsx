@@ -1,23 +1,24 @@
-import { Dispatch, memo, SetStateAction } from 'react';
+import { memo, useState } from 'react';
 import { toast } from 'sonner';
-import { useCopyToClipboard } from 'usehooks-ts';
 
-import { useMultimodalCopyToClipboard } from '@/hooks/use-multimodal-copy-to-clipboard';
 import { cn } from '@/lib/utils';
 
-import { ConsoleOutput, UIBlock } from './block';
-import { ClockRewind, CopyIcon, RedoIcon, UndoIcon } from './icons';
-import { RunCodeButton } from './run-code-button';
+import { blockDefinitions } from './block';
 import { Button } from './ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
+
+import type { UIBlock } from './block';
+import type { BlockActionContext } from './create-block';
+import type { Dispatch, SetStateAction } from 'react';
 
 interface BlockActionsProps {
   block: UIBlock;
   handleVersionChange: (type: 'next' | 'prev' | 'toggle' | 'latest') => void;
   currentVersionIndex: number;
   isCurrentVersion: boolean;
-  mode: 'read-only' | 'edit' | 'diff';
-  setConsoleOutputs: Dispatch<SetStateAction<Array<ConsoleOutput>>>;
+  mode: 'edit' | 'diff';
+  metadata: any;
+  setMetadata: Dispatch<SetStateAction<any>>;
 }
 
 function PureBlockActions({
@@ -26,90 +27,66 @@ function PureBlockActions({
   currentVersionIndex,
   isCurrentVersion,
   mode,
-  setConsoleOutputs,
+  metadata,
+  setMetadata,
 }: BlockActionsProps) {
-  const { copyTextToClipboard, copyImageToClipboard } =
-    useMultimodalCopyToClipboard();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const blockDefinition = blockDefinitions.find(
+    (definition) => definition.kind === block.kind,
+  );
+
+  if (!blockDefinition) {
+    throw new Error('Block definition not found!');
+  }
+
+  const actionContext: BlockActionContext = {
+    content: block.content,
+    handleVersionChange,
+    currentVersionIndex,
+    isCurrentVersion,
+    mode,
+    metadata,
+    setMetadata,
+  };
 
   return (
     <div className="flex flex-row gap-1">
-      {block.kind === 'code' && (
-        <RunCodeButton block={block} setConsoleOutputs={setConsoleOutputs} />
-      )}
-
-      {block.kind === 'text' && (
-        <Tooltip>
+      {blockDefinition.actions.map((action) => (
+        <Tooltip key={action.description}>
           <TooltipTrigger asChild>
             <Button
               variant="outline"
-              className={cn('!pointer-events-auto h-fit p-2 dark:hover:bg-zinc-700', {
-                'bg-muted': mode === 'diff',
+              className={cn('h-fit dark:hover:bg-zinc-700', {
+                'p-2': !action.label,
+                'px-2 py-1.5': action.label,
               })}
-              onClick={() => {
-                handleVersionChange('toggle');
+              onClick={async () => {
+                setIsLoading(true);
+
+                try {
+                  await Promise.resolve(action.onClick(actionContext));
+                } catch (error) {
+                  toast.error('Failed to execute action');
+                } finally {
+                  setIsLoading(false);
+                }
               }}
-              disabled={block.status === 'streaming' || currentVersionIndex === 0}
+              disabled={
+                isLoading || block.status === 'streaming'
+                  ? true
+                  : action.isDisabled
+                    ? action.isDisabled(actionContext)
+                    : false
+              }
             >
-              <ClockRewind size={18} />
+              {action.icon}
+              {action.label}
             </Button>
           </TooltipTrigger>
-          <TooltipContent>View changes</TooltipContent>
+          <TooltipContent>{action.description}</TooltipContent>
         </Tooltip>
-      )}
-
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="outline"
-            className="!pointer-events-auto h-fit p-2 dark:hover:bg-zinc-700"
-            onClick={() => {
-              handleVersionChange('prev');
-            }}
-            disabled={currentVersionIndex === 0 || block.status === 'streaming'}
-          >
-            <UndoIcon size={18} />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>View Previous version</TooltipContent>
-      </Tooltip>
-
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="outline"
-            className="!pointer-events-auto h-fit p-2 dark:hover:bg-zinc-700"
-            onClick={() => {
-              handleVersionChange('next');
-            }}
-            disabled={isCurrentVersion || block.status === 'streaming'}
-          >
-            <RedoIcon size={18} />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>View Next version</TooltipContent>
-      </Tooltip>
-
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="outline"
-            className="h-fit p-2 dark:hover:bg-zinc-700"
-            onClick={() => {
-              if (block.kind === 'image') {
-                copyImageToClipboard(block.content);
-              } else {
-                copyTextToClipboard(block.content);
-              }
-
-              toast.success('Copied to clipboard!');
-            }}
-            disabled={block.status === 'streaming'}
-          >
-            <CopyIcon size={18} />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>Copy to clipboard</TooltipContent>
-      </Tooltip>
+      ))}
     </div>
   );
 }
@@ -118,6 +95,7 @@ export const BlockActions = memo(PureBlockActions, (prevProps, nextProps) => {
   if (prevProps.block.status !== nextProps.block.status) return false;
   if (prevProps.currentVersionIndex !== nextProps.currentVersionIndex) return false;
   if (prevProps.isCurrentVersion !== nextProps.isCurrentVersion) return false;
+  if (prevProps.block.content !== nextProps.block.content) return false;
 
   return true;
 });

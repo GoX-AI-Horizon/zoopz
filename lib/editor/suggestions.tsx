@@ -2,9 +2,9 @@ import { Plugin, PluginKey } from 'prosemirror-state';
 import { type Decoration, DecorationSet, type EditorView } from 'prosemirror-view';
 import { createRoot } from 'react-dom/client';
 
-import { BlockKind } from '@/components/block';
 import { Suggestion as PreviewSuggestion } from '@/components/suggestion';
 
+import type { BlockKind } from '@/components/block';
 import type { Suggestion } from '@/lib/db/schema';
 import type { Node } from 'prosemirror-model';
 

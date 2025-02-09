@@ -6,10 +6,10 @@ import { useWindowSize } from 'usehooks-ts';
 
 import { cn } from '@/lib/utils';
 
-import { BlockKind } from './block';
 import { CrossIcon, MessageIcon } from './icons';
 import { Button } from './ui/button';
 
+import type { BlockKind } from './block';
 import type { UISuggestion } from '@/lib/editor/suggestions';
 
 export const Suggestion = ({

@@ -12,7 +12,9 @@ import { Button } from '@/components/ui/button';
 import { PlusIcon, VercelIcon } from './icons';
 import { useSidebar } from './ui/sidebar';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
-import { VisibilityType, VisibilitySelector } from './visibility-selector';
+import { VisibilitySelector } from './visibility-selector';
+
+import type { VisibilityType } from './visibility-selector';
 
 function PureChatHeader({
   chatId,

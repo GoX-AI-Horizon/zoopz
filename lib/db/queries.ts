@@ -1,11 +1,9 @@
 import 'server-only';
 
 import { genSaltSync, hashSync } from 'bcrypt-ts';
-import { and, asc, desc, eq, gt, gte } from 'drizzle-orm';
+import { and, asc, desc, eq, gt, gte, inArray } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-
-import { BlockKind } from '@/components/block';
 
 import {
   user,
@@ -18,6 +16,8 @@ import {
   message,
   vote,
 } from './schema';
+
+import type { BlockKind } from '@/components/block';
 
 // Optionally, if not using email/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth
@@ -298,9 +298,22 @@ export async function deleteMessagesByChatIdAfterTimestamp({
   timestamp: Date;
 }) {
   try {
-    return await db
-      .delete(message)
+    const messagesToDelete = await db
+      .select({ id: message.id })
+      .from(message)
       .where(and(eq(message.chatId, chatId), gte(message.createdAt, timestamp)));
+
+    const messageIds = messagesToDelete.map((message) => message.id);
+
+    if (messageIds.length > 0) {
+      await db
+        .delete(vote)
+        .where(and(eq(vote.chatId, chatId), inArray(vote.messageId, messageIds)));
+
+      return await db
+        .delete(message)
+        .where(and(eq(message.chatId, chatId), inArray(message.id, messageIds)));
+    }
   } catch (error) {
     console.error('Failed to delete messages by id after timestamp from database');
     throw error;

@@ -11,14 +11,7 @@ interface ImageEditorProps {
   isInline: boolean;
 }
 
-export function ImageEditor({
-  title,
-  content,
-  isCurrentVersion,
-  currentVersionIndex,
-  status,
-  isInline,
-}: ImageEditorProps) {
+export function ImageEditor({ title, content, status, isInline }: ImageEditorProps) {
   return (
     <div
       className={cn('flex w-full flex-row items-center justify-center', {

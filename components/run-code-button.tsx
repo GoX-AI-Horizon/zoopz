@@ -14,7 +14,8 @@ import { generateUUID } from '@/lib/utils';
 import { PlayIcon } from './icons';
 import { Button } from './ui/button';
 
-import type { ConsoleOutput, ConsoleOutputContent, UIBlock } from './block';
+import type { UIBlock } from './block';
+import type { ConsoleOutput, ConsoleOutputContent } from '@/components/console';
 
 const OUTPUT_HANDLERS = {
   matplotlib: `

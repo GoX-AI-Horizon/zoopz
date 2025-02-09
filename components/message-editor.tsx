@@ -1,14 +1,15 @@
 'use client';
 
-import { ChatRequestOptions, Message } from 'ai';
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import { deleteTrailingMessages } from '@/app/(chat)/actions';
-import { useUserMessageId } from '@/hooks/use-user-message-id';
 
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
+
+import type { ChatRequestOptions, Message } from 'ai';
+import type { Dispatch, SetStateAction } from 'react';
 
 export type MessageEditorProps = {
   message: Message;
@@ -25,7 +26,6 @@ export function MessageEditor({
   setMessages,
   reload,
 }: MessageEditorProps) {
-  const { userMessageIdFromServer } = useUserMessageId();
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const [draftContent, setDraftContent] = useState<string>(message.content);
@@ -74,16 +74,9 @@ export function MessageEditor({
           disabled={isSubmitting}
           onClick={async () => {
             setIsSubmitting(true);
-            const messageId = userMessageIdFromServer ?? message.id;
-
-            if (!messageId) {
-              toast.error('Something went wrong, please try again!');
-              setIsSubmitting(false);
-              return;
-            }
 
             await deleteTrailingMessages({
-              id: messageId,
+              id: message.id,
             });
 
             setMessages((messages) => {

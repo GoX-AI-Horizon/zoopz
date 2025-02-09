@@ -1,12 +1,12 @@
-import { ChatRequestOptions, Message } from 'ai';
 import equal from 'fast-deep-equal';
 import { memo } from 'react';
 
-import { Vote } from '@/lib/db/schema';
-
-import { UIBlock } from './block';
 import { PreviewMessage } from './message';
 import { useScrollToBottom } from './use-scroll-to-bottom';
+
+import type { UIBlock } from './block';
+import type { Vote } from '@/lib/db/schema';
+import type { ChatRequestOptions, Message } from 'ai';
 
 interface BlockMessagesProps {
   chatId: string;

@@ -10,6 +10,8 @@ import {
   boolean,
 } from 'drizzle-orm/pg-core';
 
+import { blockKinds } from '../blocks/server';
+
 import type { InferSelectModel } from 'drizzle-orm';
 
 export const user = pgTable('User', {
@@ -73,9 +75,7 @@ export const document = pgTable(
     createdAt: timestamp('createdAt').notNull(),
     title: text('title').notNull(),
     content: text('content'),
-    kind: varchar('text', { enum: ['text', 'code', 'image'] })
-      .notNull()
-      .default('text'),
+    kind: varchar('text', { enum: blockKinds }).notNull().default('text'),
     userId: uuid('userId')
       .notNull()
       .references(() => user.id),

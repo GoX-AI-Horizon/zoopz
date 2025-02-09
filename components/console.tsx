@@ -1,19 +1,23 @@
-import {
-  Dispatch,
-  SetStateAction,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useBlockSelector } from '@/hooks/use-block';
 import { cn } from '@/lib/utils';
 
-import { ConsoleOutput } from './block';
 import { TerminalWindowIcon, LoaderIcon, CrossSmallIcon } from './icons';
 import { Button } from './ui/button';
 
+import type { Dispatch, SetStateAction } from 'react';
+
+export interface ConsoleOutputContent {
+  type: 'text' | 'image';
+  value: string;
+}
+
+export interface ConsoleOutput {
+  id: string;
+  status: 'in_progress' | 'loading_packages' | 'completed' | 'failed';
+  contents: Array<ConsoleOutputContent>;
+}
 interface ConsoleProps {
   consoleOutputs: Array<ConsoleOutput>;
   setConsoleOutputs: Dispatch<SetStateAction<Array<ConsoleOutput>>>;

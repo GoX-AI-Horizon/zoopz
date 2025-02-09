@@ -4,8 +4,6 @@ import { toast } from 'sonner';
 import { useSWRConfig } from 'swr';
 import { useCopyToClipboard } from 'usehooks-ts';
 
-import { getMessageIdFromAnnotations } from '@/lib/utils';
-
 import { CopyIcon, ThumbDownIcon, ThumbUpIcon } from './icons';
 import { Button } from './ui/button';
 import {
@@ -62,13 +60,11 @@ export function PureMessageActions({
               disabled={vote?.isUpvoted}
               variant="outline"
               onClick={async () => {
-                const messageId = getMessageIdFromAnnotations(message);
-
                 const upvote = fetch('/api/vote', {
                   method: 'PATCH',
                   body: JSON.stringify({
                     chatId,
-                    messageId,
+                    messageId: message.id,
                     type: 'up',
                   }),
                 });
@@ -116,13 +112,11 @@ export function PureMessageActions({
               variant="outline"
               disabled={vote && !vote.isUpvoted}
               onClick={async () => {
-                const messageId = getMessageIdFromAnnotations(message);
-
                 const downvote = fetch('/api/vote', {
                   method: 'PATCH',
                   body: JSON.stringify({
                     chatId,
-                    messageId,
+                    messageId: message.id,
                     type: 'down',
                   }),
                 });

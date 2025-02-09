@@ -1,10 +1,11 @@
 'use client';
 
-import { ChatRequestOptions, CreateMessage, Message } from 'ai';
 import { motion } from 'framer-motion';
 import { memo } from 'react';
 
 import { Button } from './ui/button';
+
+import type { ChatRequestOptions, CreateMessage, Message } from 'ai';
 
 interface SuggestedActionsProps {
   chatId: string;

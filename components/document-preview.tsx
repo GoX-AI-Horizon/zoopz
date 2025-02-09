@@ -1,20 +1,23 @@
 'use client';
 
 import equal from 'fast-deep-equal';
-import { memo, MouseEvent, useCallback, useEffect, useMemo, useRef } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef } from 'react';
 import useSWR from 'swr';
 
 import { useBlock } from '@/hooks/use-block';
-import { Document } from '@/lib/db/schema';
 import { cn, fetcher } from '@/lib/utils';
 
-import { BlockKind, UIBlock } from './block';
 import { CodeEditor } from './code-editor';
 import { DocumentToolCall, DocumentToolResult } from './document';
 import { InlineDocumentSkeleton } from './document-skeleton';
 import { Editor } from './editor';
 import { FileIcon, FullscreenIcon, ImageIcon, LoaderIcon } from './icons';
 import { ImageEditor } from './image-editor';
+import { SpreadsheetEditor } from './sheet-editor';
+
+import type { BlockKind, UIBlock } from './block';
+import type { Document } from '@/lib/db/schema';
+import type { MouseEvent } from 'react';
 
 interface DocumentPreviewProps {
   isReadonly: boolean;
@@ -35,6 +38,7 @@ export function DocumentPreview({ isReadonly, result, args }: DocumentPreviewPro
 
   useEffect(() => {
     const boundingBox = hitboxRef.current?.getBoundingClientRect();
+
     if (block.documentId && boundingBox) {
       setBlock((block) => ({
         ...block,
@@ -241,11 +245,17 @@ const DocumentContent = ({ document }: { document: Document }) => {
   return (
     <div className={containerClassName}>
       {document.kind === 'text' ? (
-        <Editor {...commonProps} />
+        <Editor {...commonProps} onSaveContent={() => {}} />
       ) : document.kind === 'code' ? (
         <div className="relative flex w-full flex-1">
           <div className="absolute inset-0">
-            <CodeEditor {...commonProps} />
+            <CodeEditor {...commonProps} onSaveContent={() => {}} />
+          </div>
+        </div>
+      ) : document.kind === 'sheet' ? (
+        <div className="relative flex size-full flex-1 p-4">
+          <div className="absolute inset-0">
+            <SpreadsheetEditor {...commonProps} />
           </div>
         </div>
       ) : document.kind === 'image' ? (

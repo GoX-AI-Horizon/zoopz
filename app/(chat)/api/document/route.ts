@@ -1,10 +1,11 @@
 import { auth } from '@/app/(auth)/auth';
-import { BlockKind } from '@/components/block';
 import {
   deleteDocumentsByIdAfterTimestamp,
   getDocumentsById,
   saveDocument,
 } from '@/lib/db/queries';
+
+import type { BlockKind } from '@/components/block';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);

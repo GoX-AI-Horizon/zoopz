@@ -12,26 +12,26 @@ import {
 import useSWR, { useSWRConfig } from 'swr';
 import { useDebounceCallback, useWindowSize } from 'usehooks-ts';
 
+import { codeBlock } from '@/blocks/code/client';
+import { imageBlock } from '@/blocks/image/client';
+import { sheetBlock } from '@/blocks/sheet/client';
+import { textBlock } from '@/blocks/text/client';
 import { useBlock } from '@/hooks/use-block';
-import { cn, fetcher } from '@/lib/utils';
+import { fetcher } from '@/lib/utils';
 
 import { BlockActions } from './block-actions';
 import { BlockCloseButton } from './block-close-button';
 import { BlockMessages } from './block-messages';
-import { CodeEditor } from './code-editor';
-import { Console } from './console';
-import { DiffView } from './diffview';
-import { DocumentSkeleton } from './document-skeleton';
-import { Editor } from './editor';
-import { ImageEditor } from './image-editor';
 import { MultimodalInput } from './multimodal-input';
 import { Toolbar } from './toolbar';
 import { useSidebar } from './ui/sidebar';
 import { VersionFooter } from './version-footer';
 
-import type { Document, Suggestion, Vote } from '@/lib/db/schema';
+import type { Document, Vote } from '@/lib/db/schema';
 import type { Attachment, ChatRequestOptions, CreateMessage, Message } from 'ai';
-export type BlockKind = 'text' | 'code' | 'image';
+
+export const blockDefinitions = [textBlock, codeBlock, imageBlock, sheetBlock];
+export type BlockKind = (typeof blockDefinitions)[number]['kind'];
 
 export interface UIBlock {
   title: string;
@@ -46,17 +46,6 @@ export interface UIBlock {
     width: number;
     height: number;
   };
-}
-
-export interface ConsoleOutputContent {
-  type: 'text' | 'image';
-  value: string;
-}
-
-export interface ConsoleOutput {
-  id: string;
-  status: 'in_progress' | 'loading_packages' | 'completed' | 'failed';
-  contents: Array<ConsoleOutputContent>;
 }
 
 function PureBlock({
@@ -100,7 +89,7 @@ function PureBlock({
   ) => Promise<string | null | undefined>;
   isReadonly: boolean;
 }) {
-  const { block, setBlock } = useBlock();
+  const { block, setBlock, metadata, setMetadata } = useBlock();
 
   const {
     data: documents,
@@ -113,20 +102,9 @@ function PureBlock({
     fetcher,
   );
 
-  const { data: suggestions } = useSWR<Array<Suggestion>>(
-    documents && block && block.status !== 'streaming'
-      ? `/api/suggestions?documentId=${block.documentId}`
-      : null,
-    fetcher,
-    {
-      dedupingInterval: 5000,
-    },
-  );
-
   const [mode, setMode] = useState<'edit' | 'diff'>('edit');
   const [document, setDocument] = useState<Document | null>(null);
   const [currentVersionIndex, setCurrentVersionIndex] = useState(-1);
-  const [consoleOutputs, setConsoleOutputs] = useState<Array<ConsoleOutput>>([]);
 
   const { open: isSidebarOpen } = useSidebar();
 
@@ -257,6 +235,25 @@ function PureBlock({
 
   const { width: windowWidth, height: windowHeight } = useWindowSize();
   const isMobile = windowWidth ? windowWidth < 768 : false;
+
+  const blockDefinition = blockDefinitions.find(
+    (definition) => definition.kind === block.kind,
+  );
+
+  if (!blockDefinition) {
+    throw new Error('Block definition not found!');
+  }
+
+  useEffect(() => {
+    if (block.documentId !== 'init') {
+      if (blockDefinition.initialize) {
+        blockDefinition.initialize({
+          documentId: block.documentId,
+          setMetadata,
+        });
+      }
+    }
+  }, [block.documentId, blockDefinition, setMetadata]);
 
   return (
     <AnimatePresence>
@@ -445,93 +442,45 @@ function PureBlock({
                 handleVersionChange={handleVersionChange}
                 isCurrentVersion={isCurrentVersion}
                 mode={mode}
-                setConsoleOutputs={setConsoleOutputs}
+                metadata={metadata}
+                setMetadata={setMetadata}
               />
             </div>
 
-            <div
-              className={cn(
-                'h-full !max-w-full items-center overflow-y-scroll bg-background pb-40 dark:bg-muted',
-                {
-                  'px-2 py-2': block.kind === 'code',
-                  'px-4 py-8 md:p-20': block.kind === 'text',
-                },
-              )}
-            >
-              <div
-                className={cn('flex flex-row', {
-                  '': block.kind === 'code',
-                  'mx-auto max-w-[600px]': block.kind === 'text',
-                })}
-              >
-                {isDocumentsFetching && !block.content ? (
-                  <DocumentSkeleton blockKind={block.kind} />
-                ) : block.kind === 'code' ? (
-                  <CodeEditor
-                    content={
-                      isCurrentVersion
-                        ? block.content
-                        : getDocumentContentById(currentVersionIndex)
-                    }
-                    isCurrentVersion={isCurrentVersion}
-                    currentVersionIndex={currentVersionIndex}
-                    suggestions={suggestions ?? []}
-                    status={block.status}
-                    saveContent={saveContent}
-                  />
-                ) : block.kind === 'text' ? (
-                  mode === 'edit' ? (
-                    <Editor
-                      content={
-                        isCurrentVersion
-                          ? block.content
-                          : getDocumentContentById(currentVersionIndex)
-                      }
-                      isCurrentVersion={isCurrentVersion}
-                      currentVersionIndex={currentVersionIndex}
-                      status={block.status}
-                      saveContent={saveContent}
-                      suggestions={isCurrentVersion ? (suggestions ?? []) : []}
-                    />
-                  ) : (
-                    <DiffView
-                      oldContent={getDocumentContentById(currentVersionIndex - 1)}
-                      newContent={getDocumentContentById(currentVersionIndex)}
-                    />
-                  )
-                ) : block.kind === 'image' ? (
-                  <ImageEditor
-                    title={block.title}
-                    content={
-                      isCurrentVersion
-                        ? block.content
-                        : getDocumentContentById(currentVersionIndex)
-                    }
-                    isCurrentVersion={isCurrentVersion}
-                    currentVersionIndex={currentVersionIndex}
-                    status={block.status}
-                    isInline={false}
-                  />
-                ) : null}
+            <div className="h-full !max-w-full items-center overflow-y-scroll bg-background dark:bg-muted">
+              <blockDefinition.content
+                title={block.title}
+                content={
+                  isCurrentVersion
+                    ? block.content
+                    : getDocumentContentById(currentVersionIndex)
+                }
+                mode={mode}
+                status={block.status}
+                currentVersionIndex={currentVersionIndex}
+                suggestions={[]}
+                onSaveContent={saveContent}
+                isInline={false}
+                isCurrentVersion={isCurrentVersion}
+                getDocumentContentById={getDocumentContentById}
+                isLoading={isDocumentsFetching && !block.content}
+                metadata={metadata}
+                setMetadata={setMetadata}
+              />
 
-                {suggestions && suggestions.length > 0 ? (
-                  <div className="h-dvh w-12 shrink-0 md:hidden" />
-                ) : null}
-
-                <AnimatePresence>
-                  {isCurrentVersion && (
-                    <Toolbar
-                      isToolbarVisible={isToolbarVisible}
-                      setIsToolbarVisible={setIsToolbarVisible}
-                      append={append}
-                      isLoading={isLoading}
-                      stop={stop}
-                      setMessages={setMessages}
-                      blockKind={block.kind}
-                    />
-                  )}
-                </AnimatePresence>
-              </div>
+              <AnimatePresence>
+                {isCurrentVersion && (
+                  <Toolbar
+                    isToolbarVisible={isToolbarVisible}
+                    setIsToolbarVisible={setIsToolbarVisible}
+                    append={append}
+                    isLoading={isLoading}
+                    stop={stop}
+                    setMessages={setMessages}
+                    blockKind={block.kind}
+                  />
+                )}
+              </AnimatePresence>
             </div>
 
             <AnimatePresence>
@@ -542,13 +491,6 @@ function PureBlock({
                   handleVersionChange={handleVersionChange}
                 />
               )}
-            </AnimatePresence>
-
-            <AnimatePresence>
-              <Console
-                consoleOutputs={consoleOutputs}
-                setConsoleOutputs={setConsoleOutputs}
-              />
             </AnimatePresence>
           </motion.div>
         </motion.div>

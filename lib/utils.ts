@@ -4,10 +4,11 @@ import { twMerge } from 'tailwind-merge';
 import type { Message as DBMessage, Document } from '@/lib/db/schema';
 import type {
   CoreAssistantMessage,
-  CoreMessage,
   CoreToolMessage,
   Message,
+  TextStreamPart,
   ToolInvocation,
+  ToolSet,
 } from 'ai';
 
 export function cn(...inputs: ClassValue[]) {
@@ -94,6 +95,7 @@ export function convertToUIMessages(messages: Array<DBMessage>): Array<Message> 
     }
 
     let textContent = '';
+    let reasoning: string | undefined = undefined;
     const toolInvocations: Array<ToolInvocation> = [];
 
     if (typeof message.content === 'string') {
@@ -109,6 +111,8 @@ export function convertToUIMessages(messages: Array<DBMessage>): Array<Message> 
             toolName: content.toolName,
             args: content.args,
           });
+        } else if (content.type === 'reasoning') {
+          reasoning = content.reasoning;
         }
       }
     }
@@ -117,6 +121,7 @@ export function convertToUIMessages(messages: Array<DBMessage>): Array<Message> 
       id: message.id,
       role: message.role as Message['role'],
       content: textContent,
+      reasoning,
       toolInvocations,
     });
 
@@ -124,9 +129,16 @@ export function convertToUIMessages(messages: Array<DBMessage>): Array<Message> 
   }, []);
 }
 
-export function sanitizeResponseMessages(
-  messages: Array<CoreToolMessage | CoreAssistantMessage>,
-): Array<CoreToolMessage | CoreAssistantMessage> {
+type ResponseMessageWithoutId = CoreToolMessage | CoreAssistantMessage;
+type ResponseMessage = ResponseMessageWithoutId & { id: string };
+
+export function sanitizeResponseMessages({
+  messages,
+  reasoning,
+}: {
+  messages: Array<ResponseMessage>;
+  reasoning: string | undefined;
+}) {
   const toolResultIds: Array<string> = [];
 
   for (const message of messages) {
@@ -151,6 +163,11 @@ export function sanitizeResponseMessages(
           ? content.text.length > 0
           : true,
     );
+
+    if (reasoning) {
+      // @ts-expect-error: reasoning message parts in sdk is wip
+      sanitizedContent.push({ type: 'reasoning', reasoning });
+    }
 
     return {
       ...message,
@@ -194,7 +211,7 @@ export function sanitizeUIMessages(messages: Array<Message>): Array<Message> {
   );
 }
 
-export function getMostRecentUserMessage(messages: Array<CoreMessage>) {
+export function getMostRecentUserMessage(messages: Array<Message>) {
   const userMessages = messages.filter((message) => message.role === 'user');
   return userMessages.at(-1);
 }
@@ -207,14 +224,4 @@ export function getDocumentTimestampByIndex(
   if (index > documents.length) return new Date();
 
   return documents[index].createdAt;
-}
-
-export function getMessageIdFromAnnotations(message: Message) {
-  if (!message.annotations) return message.id;
-
-  const [annotation] = message.annotations;
-  if (!annotation) return message.id;
-
-  // @ts-expect-error messageIdFromServer is not defined in MessageAnnotation
-  return annotation.messageIdFromServer;
 }

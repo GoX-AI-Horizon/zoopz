@@ -2,30 +2,32 @@
 
 import { useChat } from 'ai/react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import useSWR, { useSWRConfig } from 'swr';
 
 import { ChatHeader } from '@/components/chat-header';
 import { useBlockSelector } from '@/hooks/use-block';
-import { fetcher } from '@/lib/utils';
+import { fetcher, generateUUID } from '@/lib/utils';
 
 import { Block } from './block';
 import { Messages } from './messages';
 import { MultimodalInput } from './multimodal-input';
-import { VisibilityType } from './visibility-selector';
 
+import type { VisibilityType } from './visibility-selector';
 import type { Vote } from '@/lib/db/schema';
-import type { Attachment, Message } from 'ai';
+import type { Attachment } from 'ai';
+import type { Message } from 'ai/react';
 
 export function Chat({
   id,
   initialMessages,
-  selectedModelId,
+  selectedChatModel,
   selectedVisibilityType,
   isReadonly,
 }: {
   id: string;
   initialMessages: Array<Message>;
-  selectedModelId: string;
+  selectedChatModel: string;
   selectedVisibilityType: VisibilityType;
   isReadonly: boolean;
 }) {
@@ -43,11 +45,16 @@ export function Chat({
     reload,
   } = useChat({
     id,
-    body: { id, modelId: selectedModelId },
+    body: { id, selectedChatModel: selectedChatModel },
     initialMessages,
     experimental_throttle: 100,
+    sendExtraMessageFields: true,
+    generateId: generateUUID,
     onFinish: () => {
       mutate('/api/history');
+    },
+    onError: (error) => {
+      toast.error('An error occured, please try again!');
     },
   });
 
@@ -61,7 +68,7 @@ export function Chat({
       <div className="flex h-dvh min-w-0 flex-col bg-background">
         <ChatHeader
           chatId={id}
-          selectedModelId={selectedModelId}
+          selectedModelId={selectedChatModel}
           selectedVisibilityType={selectedVisibilityType}
           isReadonly={isReadonly}
         />

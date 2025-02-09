@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -13,6 +13,8 @@ import { useChatVisibility } from '@/hooks/use-chat-visibility';
 import { cn } from '@/lib/utils';
 
 import { CheckCircleFillIcon, ChevronDownIcon, GlobeIcon, LockIcon } from './icons';
+
+import type { ReactNode } from 'react';
 
 export type VisibilityType = 'private' | 'public';
 

@@ -5,30 +5,30 @@ import { useEffect, useRef, useState } from 'react';
 import { useSWRConfig } from 'swr';
 
 import { initialBlockData, useBlock } from '@/hooks/use-block';
-import { useUserMessageId } from '@/hooks/use-user-message-id';
-import { Suggestion } from '@/lib/db/schema';
 
-import { BlockKind } from './block';
+import { blockDefinitions } from './block';
 
-type DataStreamDelta = {
+import type { BlockKind } from './block';
+import type { Suggestion } from '@/lib/db/schema';
+
+export type DataStreamDelta = {
   type:
     | 'text-delta'
     | 'code-delta'
+    | 'sheet-delta'
     | 'image-delta'
     | 'title'
     | 'id'
     | 'suggestion'
     | 'clear'
     | 'finish'
-    | 'user-message-id'
     | 'kind';
   content: string | Suggestion;
 };
 
 export function DataStreamHandler({ id }: { id: string }) {
   const { data: dataStream } = useChat({ id });
-  const { setUserMessageIdFromServer } = useUserMessageId();
-  const { setBlock } = useBlock();
+  const { block, setBlock, setMetadata } = useBlock();
   const lastProcessedIndex = useRef(-1);
 
   const { mutate } = useSWRConfig();
@@ -51,9 +51,16 @@ export function DataStreamHandler({ id }: { id: string }) {
     lastProcessedIndex.current = dataStream.length - 1;
 
     (newDeltas as DataStreamDelta[]).forEach((delta: DataStreamDelta) => {
-      if (delta.type === 'user-message-id') {
-        setUserMessageIdFromServer(delta.content as string);
-        return;
+      const blockDefinition = blockDefinitions.find(
+        (blockDefinition) => blockDefinition.kind === block.kind,
+      );
+
+      if (blockDefinition?.onStreamPart) {
+        blockDefinition.onStreamPart({
+          streamPart: delta,
+          setBlock,
+          setMetadata,
+        });
       }
 
       setBlock((draftBlock) => {
@@ -83,50 +90,6 @@ export function DataStreamHandler({ id }: { id: string }) {
               status: 'streaming',
             };
 
-          case 'text-delta':
-            return {
-              ...draftBlock,
-              content: draftBlock.content + (delta.content as string),
-              isVisible:
-                draftBlock.status === 'streaming' &&
-                draftBlock.content.length > 400 &&
-                draftBlock.content.length < 450
-                  ? true
-                  : draftBlock.isVisible,
-              status: 'streaming',
-            };
-
-          case 'code-delta':
-            return {
-              ...draftBlock,
-              content: delta.content as string,
-              isVisible:
-                draftBlock.status === 'streaming' &&
-                draftBlock.content.length > 300 &&
-                draftBlock.content.length < 310
-                  ? true
-                  : draftBlock.isVisible,
-              status: 'streaming',
-            };
-
-          case 'image-delta':
-            return {
-              ...draftBlock,
-              content: delta.content as string,
-              isVisible: true,
-              status: 'streaming',
-            };
-
-          case 'suggestion':
-            setTimeout(() => {
-              setOptimisticSuggestions((currentSuggestions) => [
-                ...currentSuggestions,
-                delta.content as Suggestion,
-              ]);
-            }, 0);
-
-            return draftBlock;
-
           case 'clear':
             return {
               ...draftBlock,
@@ -145,7 +108,7 @@ export function DataStreamHandler({ id }: { id: string }) {
         }
       });
     });
-  }, [dataStream, setBlock, setUserMessageIdFromServer]);
+  }, [dataStream, setBlock, setMetadata, block]);
 
   return null;
 }

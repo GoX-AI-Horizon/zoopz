@@ -1,12 +1,12 @@
-import { ChatRequestOptions, Message } from 'ai';
 import equal from 'fast-deep-equal';
 import { memo } from 'react';
-
-import { Vote } from '@/lib/db/schema';
 
 import { PreviewMessage, ThinkingMessage } from './message';
 import { Overview } from './overview';
 import { useScrollToBottom } from './use-scroll-to-bottom';
+
+import type { Vote } from '@/lib/db/schema';
+import type { ChatRequestOptions, Message } from 'ai';
 
 interface MessagesProps {
   chatId: string;
@@ -37,7 +37,7 @@ function PureMessages({
       ref={messagesContainerRef}
       className="flex min-w-0 flex-1 flex-col gap-6 overflow-y-scroll pt-4"
     >
-      {/* {messages.length === 0 && <Overview />} */}
+      {messages.length === 0 && <Overview />}
 
       {messages.map((message, index) => (
         <PreviewMessage
