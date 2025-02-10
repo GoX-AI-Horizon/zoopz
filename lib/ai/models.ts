@@ -1,19 +1,19 @@
+import { anthropic } from '@ai-sdk/anthropic';
 import { fireworks } from '@ai-sdk/fireworks';
 import { openai } from '@ai-sdk/openai';
 import { customProvider, extractReasoningMiddleware, wrapLanguageModel } from 'ai';
-
 export const DEFAULT_CHAT_MODEL: string = 'chat-model-small';
 
 export const myProvider = customProvider({
   languageModels: {
-    'chat-model-small': openai('gpt-4o-mini'),
-    'chat-model-large': openai('gpt-4o'),
+    'chat-model-small': anthropic('claude-3-5-haiku-latest'),
+    'chat-model-large': anthropic('claude-3-5-sonnet-latest'),
     'chat-model-reasoning': wrapLanguageModel({
       model: fireworks('accounts/fireworks/models/deepseek-r1'),
       middleware: extractReasoningMiddleware({ tagName: 'think' }),
     }),
-    'title-model': openai('gpt-4o'),
-    'block-model': openai('gpt-4o'),
+    'title-model': anthropic('claude-3-5-haiku-latest'),
+    'block-model': anthropic('claude-3-5-haiku-latest'),
   },
   imageModels: {
     'small-model': openai.image('dall-e-3'),
