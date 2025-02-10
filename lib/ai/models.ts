@@ -12,11 +12,11 @@ export const myProvider = customProvider({
       model: fireworks('accounts/fireworks/models/deepseek-r1'),
       middleware: extractReasoningMiddleware({ tagName: 'think' }),
     }),
-    'title-model': openai('gpt-4-turbo'),
-    'block-model': openai('gpt-4o-mini'),
+    'title-model': openai('gpt-4o'),
+    'block-model': openai('gpt-4o'),
   },
   imageModels: {
-    'small-model': openai.image('dall-e-2'),
+    'small-model': openai.image('dall-e-3'),
     'large-model': openai.image('dall-e-3'),
   },
 });
