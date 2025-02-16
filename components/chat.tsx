@@ -6,10 +6,10 @@ import { toast } from 'sonner';
 import useSWR, { useSWRConfig } from 'swr';
 
 import { ChatHeader } from '@/components/chat-header';
-import { useBlockSelector } from '@/hooks/use-block';
+import { useArtifactSelector } from '@/hooks/use-artifact';
 import { fetcher, generateUUID } from '@/lib/utils';
 
-import { Block } from './block';
+import { Artifact } from './artifact';
 import { Messages } from './messages';
 import { MultimodalInput } from './multimodal-input';
 
@@ -61,7 +61,7 @@ export function Chat({
   const { data: votes } = useSWR<Array<Vote>>(`/api/vote?chatId=${id}`, fetcher);
 
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
-  const isBlockVisible = useBlockSelector((state) => state.isVisible);
+  const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
 
   return (
     <>
@@ -81,7 +81,7 @@ export function Chat({
           setMessages={setMessages}
           reload={reload}
           isReadonly={isReadonly}
-          isBlockVisible={isBlockVisible}
+          isArtifactVisible={isArtifactVisible}
         />
 
         <form className="mx-auto flex w-full gap-2 bg-background px-4 pb-4 md:max-w-3xl md:pb-6">
@@ -103,7 +103,7 @@ export function Chat({
         </form>
       </div>
 
-      <Block
+      <Artifact
         chatId={id}
         input={input}
         setInput={setInput}

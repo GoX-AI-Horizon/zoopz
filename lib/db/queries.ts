@@ -17,7 +17,7 @@ import {
   vote,
 } from './schema';
 
-import type { BlockKind } from '@/components/block';
+import type { ArtifactKind } from '@/components/artifact';
 
 // Optionally, if not using email/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth
@@ -177,7 +177,7 @@ export async function saveDocument({
 }: {
   id: string;
   title: string;
-  kind: BlockKind;
+  kind: ArtifactKind;
   content: string;
   userId: string;
 }) {

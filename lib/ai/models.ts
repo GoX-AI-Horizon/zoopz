@@ -12,8 +12,8 @@ export const myProvider = customProvider({
       model: fireworks('accounts/fireworks/models/deepseek-r1'),
       middleware: extractReasoningMiddleware({ tagName: 'think' }),
     }),
-    'title-model': anthropic('claude-3-5-haiku-latest'),
-    'block-model': anthropic('claude-3-5-haiku-latest'),
+    'title-model': openai('gpt-4o'),
+    'artifact-model': openai('gpt-4o-mini'),
   },
   imageModels: {
     'small-model': openai.image('dall-e-3'),

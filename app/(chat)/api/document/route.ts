@@ -5,7 +5,7 @@ import {
   saveDocument,
 } from '@/lib/db/queries';
 
-import type { BlockKind } from '@/components/block';
+import type { ArtifactKind } from '@/components/artifact';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -54,7 +54,7 @@ export async function POST(request: Request) {
     content,
     title,
     kind,
-  }: { content: string; title: string; kind: BlockKind } = await request.json();
+  }: { content: string; title: string; kind: ArtifactKind } = await request.json();
 
   if (session.user?.id) {
     const document = await saveDocument({

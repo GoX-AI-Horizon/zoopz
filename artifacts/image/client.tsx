@@ -1,15 +1,16 @@
-import { Block } from '@/components/create-block';
-import { CopyIcon, RedoIcon, UndoIcon } from '@/components/icons';
-import { ImageEditor } from '@/components/image-editor';
 import { toast } from 'sonner';
 
-export const imageBlock = new Block({
+import { Artifact } from '@/components/create-artifact';
+import { CopyIcon, RedoIcon, UndoIcon } from '@/components/icons';
+import { ImageEditor } from '@/components/image-editor';
+
+export const imageArtifact = new Artifact({
   kind: 'image',
   description: 'Useful for image generation',
-  onStreamPart: ({ streamPart, setBlock }) => {
+  onStreamPart: ({ streamPart, setArtifact }) => {
     if (streamPart.type === 'image-delta') {
-      setBlock((draftBlock) => ({
-        ...draftBlock,
+      setArtifact((draftArtifact) => ({
+        ...draftArtifact,
         content: streamPart.content as string,
         isVisible: true,
         status: 'streaming',
@@ -61,9 +62,7 @@ export const imageBlock = new Block({
           ctx?.drawImage(img, 0, 0);
           canvas.toBlob((blob) => {
             if (blob) {
-              navigator.clipboard.write([
-                new ClipboardItem({ 'image/png': blob }),
-              ]);
+              navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
             }
           }, 'image/png');
         };

@@ -1,5 +1,8 @@
-import { Block } from '@/components/create-block';
+import { toast } from 'sonner';
+
 import { CodeEditor } from '@/components/code-editor';
+import { Console } from '@/components/console';
+import { Artifact } from '@/components/create-artifact';
 import {
   CopyIcon,
   LogsIcon,
@@ -8,13 +11,9 @@ import {
   RedoIcon,
   UndoIcon,
 } from '@/components/icons';
-import { toast } from 'sonner';
 import { generateUUID } from '@/lib/utils';
-import {
-  Console,
-  ConsoleOutput,
-  ConsoleOutputContent,
-} from '@/components/console';
+
+import type { ConsoleOutput, ConsoleOutputContent } from '@/components/console';
 
 const OUTPUT_HANDLERS = {
   matplotlib: `
@@ -66,7 +65,7 @@ interface Metadata {
   outputs: Array<ConsoleOutput>;
 }
 
-export const codeBlock = new Block<'code', Metadata>({
+export const codeArtifact = new Artifact<'code', Metadata>({
   kind: 'code',
   description:
     'Useful for code generation; Code execution is only available for python code.',
@@ -75,17 +74,17 @@ export const codeBlock = new Block<'code', Metadata>({
       outputs: [],
     });
   },
-  onStreamPart: ({ streamPart, setBlock }) => {
+  onStreamPart: ({ streamPart, setArtifact }) => {
     if (streamPart.type === 'code-delta') {
-      setBlock((draftBlock) => ({
-        ...draftBlock,
+      setArtifact((draftArtifact) => ({
+        ...draftArtifact,
         content: streamPart.content as string,
         isVisible:
-          draftBlock.status === 'streaming' &&
-          draftBlock.content.length > 300 &&
-          draftBlock.content.length < 310
+          draftArtifact.status === 'streaming' &&
+          draftArtifact.content.length > 300 &&
+          draftArtifact.content.length < 310
             ? true
-            : draftBlock.isVisible,
+            : draftArtifact.isVisible,
         status: 'streaming',
       }));
     }
@@ -141,9 +140,7 @@ export const codeBlock = new Block<'code', Metadata>({
           currentPyodideInstance.setStdout({
             batched: (output: string) => {
               outputContent.push({
-                type: output.startsWith('data:image/png;base64')
-                  ? 'image'
-                  : 'text',
+                type: output.startsWith('data:image/png;base64') ? 'image' : 'text',
                 value: output,
               });
             },

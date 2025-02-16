@@ -4,18 +4,18 @@ import equal from 'fast-deep-equal';
 import { memo, useCallback, useEffect, useMemo, useRef } from 'react';
 import useSWR from 'swr';
 
-import { useBlock } from '@/hooks/use-block';
+import { useArtifact } from '@/hooks/use-artifact';
 import { cn, fetcher } from '@/lib/utils';
 
 import { CodeEditor } from './code-editor';
 import { DocumentToolCall, DocumentToolResult } from './document';
 import { InlineDocumentSkeleton } from './document-skeleton';
-import { Editor } from './editor';
 import { FileIcon, FullscreenIcon, ImageIcon, LoaderIcon } from './icons';
 import { ImageEditor } from './image-editor';
 import { SpreadsheetEditor } from './sheet-editor';
+import { Editor } from './text-editor';
 
-import type { BlockKind, UIBlock } from './block';
+import type { ArtifactKind, UIArtifact } from './artifact';
 import type { Document } from '@/lib/db/schema';
 import type { MouseEvent } from 'react';
 
@@ -26,7 +26,7 @@ interface DocumentPreviewProps {
 }
 
 export function DocumentPreview({ isReadonly, result, args }: DocumentPreviewProps) {
-  const { block, setBlock } = useBlock();
+  const { artifact, setArtifact } = useArtifact();
 
   const { data: documents, isLoading: isDocumentsFetching } = useSWR<Array<Document>>(
     result ? `/api/document?id=${result.id}` : null,
@@ -39,9 +39,9 @@ export function DocumentPreview({ isReadonly, result, args }: DocumentPreviewPro
   useEffect(() => {
     const boundingBox = hitboxRef.current?.getBoundingClientRect();
 
-    if (block.documentId && boundingBox) {
-      setBlock((block) => ({
-        ...block,
+    if (artifact.documentId && boundingBox) {
+      setArtifact((artifact) => ({
+        ...artifact,
         boundingBox: {
           left: boundingBox.x,
           top: boundingBox.y,
@@ -50,9 +50,9 @@ export function DocumentPreview({ isReadonly, result, args }: DocumentPreviewPro
         },
       }));
     }
-  }, [block.documentId, setBlock]);
+  }, [artifact.documentId, setArtifact]);
 
-  if (block.isVisible) {
+  if (artifact.isVisible) {
     if (result) {
       return (
         <DocumentToolResult
@@ -75,38 +75,38 @@ export function DocumentPreview({ isReadonly, result, args }: DocumentPreviewPro
   }
 
   if (isDocumentsFetching) {
-    return <LoadingSkeleton blockKind={result.kind ?? args.kind} />;
+    return <LoadingSkeleton artifactKind={result.kind ?? args.kind} />;
   }
 
   const document: Document | null = previewDocument
     ? previewDocument
-    : block.status === 'streaming'
+    : artifact.status === 'streaming'
       ? {
-          title: block.title,
-          kind: block.kind,
-          content: block.content,
-          id: block.documentId,
+          title: artifact.title,
+          kind: artifact.kind,
+          content: artifact.content,
+          id: artifact.documentId,
           createdAt: new Date(),
           userId: 'noop',
         }
       : null;
 
-  if (!document) return <LoadingSkeleton blockKind={block.kind} />;
+  if (!document) return <LoadingSkeleton artifactKind={artifact.kind} />;
 
   return (
     <div className="relative w-full cursor-pointer">
-      <HitboxLayer hitboxRef={hitboxRef} result={result} setBlock={setBlock} />
+      <HitboxLayer hitboxRef={hitboxRef} result={result} setArtifact={setArtifact} />
       <DocumentHeader
         title={document.title}
         kind={document.kind}
-        isStreaming={block.status === 'streaming'}
+        isStreaming={artifact.status === 'streaming'}
       />
       <DocumentContent document={document} />
     </div>
   );
 }
 
-const LoadingSkeleton = ({ blockKind }: { blockKind: BlockKind }) => (
+const LoadingSkeleton = ({ artifactKind }: { artifactKind: ArtifactKind }) => (
   <div className="w-full">
     <div className="flex h-[57px] flex-row items-center justify-between gap-2 rounded-t-2xl border border-b-0 p-4 dark:border-zinc-700 dark:bg-muted">
       <div className="flex flex-row items-center gap-3">
@@ -119,7 +119,7 @@ const LoadingSkeleton = ({ blockKind }: { blockKind: BlockKind }) => (
         <FullscreenIcon />
       </div>
     </div>
-    {blockKind === 'image' ? (
+    {artifactKind === 'image' ? (
       <div className="overflow-y-scroll rounded-b-2xl border border-t-0 bg-muted dark:border-zinc-700">
         <div className="h-[257px] w-full animate-pulse bg-muted-foreground/20" />
       </div>
@@ -134,21 +134,23 @@ const LoadingSkeleton = ({ blockKind }: { blockKind: BlockKind }) => (
 const PureHitboxLayer = ({
   hitboxRef,
   result,
-  setBlock,
+  setArtifact,
 }: {
   hitboxRef: React.RefObject<HTMLDivElement>;
   result: any;
-  setBlock: (updaterFn: UIBlock | ((currentBlock: UIBlock) => UIBlock)) => void;
+  setArtifact: (
+    updaterFn: UIArtifact | ((currentArtifact: UIArtifact) => UIArtifact),
+  ) => void;
 }) => {
   const handleClick = useCallback(
     (event: MouseEvent<HTMLElement>) => {
       const boundingBox = event.currentTarget.getBoundingClientRect();
 
-      setBlock((block) =>
-        block.status === 'streaming'
-          ? { ...block, isVisible: true }
+      setArtifact((artifact) =>
+        artifact.status === 'streaming'
+          ? { ...artifact, isVisible: true }
           : {
-              ...block,
+              ...artifact,
               title: result.title,
               documentId: result.id,
               kind: result.kind,
@@ -162,7 +164,7 @@ const PureHitboxLayer = ({
             },
       );
     },
-    [setBlock, result],
+    [setArtifact, result],
   );
 
   return (
@@ -193,7 +195,7 @@ const PureDocumentHeader = ({
   isStreaming,
 }: {
   title: string;
-  kind: BlockKind;
+  kind: ArtifactKind;
   isStreaming: boolean;
 }) => (
   <div className="flex flex-row items-start justify-between gap-2 rounded-t-2xl border border-b-0 p-4 dark:border-zinc-700 dark:bg-muted sm:items-center">
@@ -223,7 +225,7 @@ const DocumentHeader = memo(PureDocumentHeader, (prevProps, nextProps) => {
 });
 
 const DocumentContent = ({ document }: { document: Document }) => {
-  const { block } = useBlock();
+  const { artifact } = useArtifact();
 
   const containerClassName = cn(
     'h-[257px] overflow-y-scroll border rounded-b-2xl dark:bg-muted border-t-0 dark:border-zinc-700',
@@ -237,7 +239,7 @@ const DocumentContent = ({ document }: { document: Document }) => {
     content: document.content ?? '',
     isCurrentVersion: true,
     currentVersionIndex: 0,
-    status: block.status,
+    status: artifact.status,
     saveContent: () => {},
     suggestions: [],
   };
@@ -264,7 +266,7 @@ const DocumentContent = ({ document }: { document: Document }) => {
           content={document.content ?? ''}
           isCurrentVersion={true}
           currentVersionIndex={0}
-          status={block.status}
+          status={artifact.status}
           isInline={true}
         />
       ) : null}

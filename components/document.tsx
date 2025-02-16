@@ -1,11 +1,11 @@
 import { memo } from 'react';
 import { toast } from 'sonner';
 
-import { useBlock } from '@/hooks/use-block';
+import { useArtifact } from '@/hooks/use-artifact';
 
 import { FileIcon, LoaderIcon, MessageIcon, PencilEditIcon } from './icons';
 
-import type { BlockKind } from './block';
+import type { ArtifactKind } from './artifact';
 
 const getActionText = (
   type: 'create' | 'update' | 'request-suggestions',
@@ -25,7 +25,7 @@ const getActionText = (
 
 interface DocumentToolResultProps {
   type: 'create' | 'update' | 'request-suggestions';
-  result: { id: string; title: string; kind: BlockKind };
+  result: { id: string; title: string; kind: ArtifactKind };
   isReadonly: boolean;
 }
 
@@ -34,7 +34,7 @@ function PureDocumentToolResult({
   result,
   isReadonly,
 }: DocumentToolResultProps) {
-  const { setBlock } = useBlock();
+  const { setArtifact } = useArtifact();
 
   return (
     <button
@@ -55,7 +55,7 @@ function PureDocumentToolResult({
           height: rect.height,
         };
 
-        setBlock({
+        setArtifact({
           documentId: result.id,
           kind: result.kind,
           content: '',
@@ -89,7 +89,7 @@ interface DocumentToolCallProps {
 }
 
 function PureDocumentToolCall({ type, args, isReadonly }: DocumentToolCallProps) {
-  const { setBlock } = useBlock();
+  const { setArtifact } = useArtifact();
 
   return (
     <button
@@ -110,8 +110,8 @@ function PureDocumentToolCall({ type, args, isReadonly }: DocumentToolCallProps)
           height: rect.height,
         };
 
-        setBlock((currentBlock) => ({
-          ...currentBlock,
+        setArtifact((currentArtifact) => ({
+          ...currentArtifact,
           isVisible: true,
           boundingBox,
         }));

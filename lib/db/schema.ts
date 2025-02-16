@@ -10,8 +10,6 @@ import {
   boolean,
 } from 'drizzle-orm/pg-core';
 
-import { blockKinds } from '../blocks/server';
-
 import type { InferSelectModel } from 'drizzle-orm';
 
 export const user = pgTable('User', {

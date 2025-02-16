@@ -4,7 +4,7 @@ import { createRoot } from 'react-dom/client';
 
 import { Suggestion as PreviewSuggestion } from '@/components/suggestion';
 
-import type { BlockKind } from '@/components/block';
+import type { ArtifactKind } from '@/components/artifact';
 import type { Suggestion } from '@/lib/db/schema';
 import type { Node } from 'prosemirror-model';
 
@@ -67,7 +67,7 @@ export function projectWithPositions(
 export function createSuggestionWidget(
   suggestion: UISuggestion,
   view: EditorView,
-  blockKind: BlockKind = 'text',
+  artifactKind: ArtifactKind = 'text',
 ): { dom: HTMLElement; destroy: () => void } {
   const dom = document.createElement('span');
   const root = createRoot(dom);
@@ -114,7 +114,7 @@ export function createSuggestionWidget(
     <PreviewSuggestion
       suggestion={suggestion}
       onApply={onApply}
-      blockKind={blockKind}
+      artifactKind={artifactKind}
     />,
   );
 

@@ -4,11 +4,11 @@ import { memo } from 'react';
 import { PreviewMessage } from './message';
 import { useScrollToBottom } from './use-scroll-to-bottom';
 
-import type { UIBlock } from './block';
+import type { UIArtifact } from './artifact';
 import type { Vote } from '@/lib/db/schema';
 import type { ChatRequestOptions, Message } from 'ai';
 
-interface BlockMessagesProps {
+interface ArtifactMessagesProps {
   chatId: string;
   isLoading: boolean;
   votes: Array<Vote> | undefined;
@@ -18,10 +18,10 @@ interface BlockMessagesProps {
     chatRequestOptions?: ChatRequestOptions,
   ) => Promise<string | null | undefined>;
   isReadonly: boolean;
-  blockStatus: UIBlock['status'];
+  artifactStatus: UIArtifact['status'];
 }
 
-function PureBlockMessages({
+function PureArtifactMessages({
   chatId,
   isLoading,
   votes,
@@ -29,7 +29,7 @@ function PureBlockMessages({
   setMessages,
   reload,
   isReadonly,
-}: BlockMessagesProps) {
+}: ArtifactMessagesProps) {
   const [messagesContainerRef, messagesEndRef] = useScrollToBottom<HTMLDivElement>();
 
   return (
@@ -57,8 +57,14 @@ function PureBlockMessages({
   );
 }
 
-function areEqual(prevProps: BlockMessagesProps, nextProps: BlockMessagesProps) {
-  if (prevProps.blockStatus === 'streaming' && nextProps.blockStatus === 'streaming')
+function areEqual(
+  prevProps: ArtifactMessagesProps,
+  nextProps: ArtifactMessagesProps,
+) {
+  if (
+    prevProps.artifactStatus === 'streaming' &&
+    nextProps.artifactStatus === 'streaming'
+  )
     return true;
 
   if (prevProps.isLoading !== nextProps.isLoading) return false;
@@ -69,4 +75,4 @@ function areEqual(prevProps: BlockMessagesProps, nextProps: BlockMessagesProps) 
   return true;
 }
 
-export const BlockMessages = memo(PureBlockMessages, areEqual);
+export const ArtifactMessages = memo(PureArtifactMessages, areEqual);
